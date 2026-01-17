@@ -913,6 +913,27 @@ The README should:
 - Advanced pattern detection
 - Predictive state modeling
 
+#### Calendar Integration Roadmap (Expanded)
+
+*Added based on founder usage patterns - 2026-01-17*
+
+**Problem observed:** Deep work windows (e.g., 6-11 AM) are often claimed by reactive work (Slack, meetings) without awareness. The user intends deep work but defaults to availability.
+
+**Calendar as observability layer:**
+
+| Capability | Value |
+|------------|-------|
+| See intended structure | Deep work blocks vs. meeting blocks as declared |
+| Detect drift | "You blocked 6-11 AM for deep work but accepted 3 meetings" |
+| Correlate with state | "Your 8 AM state was high-energy, but you spent it on Slack triage" |
+| Reality check | "You planned 5 deep work hours this week, you got 1.5" |
+| Protect windows | Alert when someone tries to book into protected time |
+
+**Implementation phases:**
+1. **Phase 1.5:** Read-only calendar ingestion as context for state assessment
+2. **Phase 4:** Write access for time blocking and protected window enforcement
+3. **Future:** Calendar as guardrail trigger ("You have 6 hours of meetings today - deep work not recommended")
+
 #### Long-term
 - Mobile companion (state logging on the go)
 - Voice interface for quick state input
