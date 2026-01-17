@@ -107,7 +107,7 @@ You own your data. The system learns only from your history, not anyone else's.
 1. Clone the repository
 2. Set up Supabase and configure credentials
 3. Install the MCP server
-4. Start logging state with `veto assess`
+4. Start logging state with `veto_assess`
 
 Detailed setup instructions are coming.
 
