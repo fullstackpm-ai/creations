@@ -1,20 +1,21 @@
 # BMAD Workflow Status
-# Project: HumanOS
-# Last Updated: 2026-01-16
+# Project: Veto
+# Last Updated: 2026-01-17
 
-project_name: humanOS
+project_name: veto
 created_date: 2026-01-16
 
 workflows:
   product-brief:
     status: complete
-    output_file: planning-artifacts/product-brief-humanOS-2026-01-16.md
+    output_file: planning-artifacts/product-brief-veto-2026-01-16.md
     completed_date: 2026-01-16
     steps_completed: [1, 2, 3, 4, 5, 6]
     notes: |
       Comprehensive product brief created through collaborative discovery.
       Includes strategic positioning refined via Party Mode multi-agent analysis.
       MVP scope defined with single guardrail focus and 4-week implementation timeline.
+      Project renamed from humanOS to Veto on 2026-01-17.
 
 next_recommended:
   - workflow: create-architecture

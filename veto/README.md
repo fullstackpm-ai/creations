@@ -1,4 +1,4 @@
-# HumanOS
+# Veto
 
 A personal cognitive operating system that observes your state, protects decision quality, and learns how you actually work.
 
@@ -6,9 +6,9 @@ A personal cognitive operating system that observes your state, protects decisio
 
 ---
 
-## What HumanOS Does
+## What Veto Does
 
-HumanOS tracks your physiological and cognitive state, correlates it with outcomes over time, and learns when deep work tends to go well or poorly for you.
+Veto tracks your physiological and cognitive state, correlates it with outcomes over time, and learns when deep work tends to go well or poorly for you.
 
 Once it has enough evidence, it will sometimes advise you not to do deep work, even when you feel like pushing through.
 
@@ -18,7 +18,7 @@ It earns the right to say no by being correct.
 
 ## Who This Is For
 
-HumanOS is for people who:
+Veto is for people who:
 
 - Already use LLMs as cognitive tools
 - Have abandoned 2 or more productivity systems because they were too shallow
@@ -32,7 +32,7 @@ HumanOS is for people who:
 
 ## Who This Is NOT For
 
-Do not use HumanOS if you:
+Do not use Veto if you:
 
 - Want to get more done
 - Need motivation or accountability
@@ -64,7 +64,7 @@ The first two weeks are observation. Trust typically forms in week three, when t
 
 ## The Trust Model
 
-HumanOS does not assume authority. It earns it.
+Veto does not assume authority. It earns it.
 
 - **Week 1:** Observation only. The system mirrors patterns back to you.
 - **Week 2 to 3:** Guardrails activate once confidence reaches 70 percent.
@@ -78,7 +78,7 @@ It is when you wanted to push through, the system advised against it, you overro
 
 ## What Success Looks Like
 
-You are using HumanOS correctly if:
+You are using Veto correctly if:
 
 - You make fewer decisions you later reverse
 - You override the system less often over time
@@ -90,7 +90,7 @@ You are not using it correctly if you are trying to extract more output from you
 
 ## Technical Details
 
-HumanOS is a CLI-first MCP server that integrates with Claude Code. You interact with it through simple commands during your day.
+Veto is a CLI-first MCP server that integrates with Claude Code. You interact with it through simple commands during your day.
 
 - **Stack:** Node.js and TypeScript with Supabase
 - **AI:** Claude Code as the reasoning layer
@@ -102,12 +102,12 @@ You own your data. The system learns only from your history, not anyone else's.
 
 ## Getting Started
 
-> **Note:** HumanOS is in early development. This README describes the intended system.
+> **Note:** Veto is in early development. This README describes the intended system.
 
 1. Clone the repository
 2. Set up Supabase and configure credentials
 3. Install the MCP server
-4. Start logging state with `hos assess`
+4. Start logging state with `veto assess`
 
 Detailed setup instructions are coming.
 
@@ -116,7 +116,7 @@ Detailed setup instructions are coming.
 ## FAQ
 
 **How is this different from a habit tracker?**
-Habit trackers reward consistency. HumanOS rewards correctness. Sometimes the correct action is to not work.
+Habit trackers reward consistency. Veto rewards correctness. Sometimes the correct action is to not work.
 
 **Why does it take 2 to 3 weeks to see value?**
 Because the system needs evidence. A system that guesses on day one will be wrong and lose your trust.
@@ -125,7 +125,7 @@ Because the system needs evidence. A system that guesses on day one will be wron
 The system tracks override outcomes. If overrides repeatedly lead to regret, that pattern will surface clearly.
 
 **Can I use this with a team?**
-No. HumanOS is deliberately single-player. Honest state tracking requires privacy.
+No. Veto is deliberately single-player. Honest state tracking requires privacy.
 
 ---
 
@@ -133,7 +133,7 @@ No. HumanOS is deliberately single-player. Honest state tracking requires privac
 
 > "Subjective experience is no longer a reliable control surface for high-stakes, high-complexity lives."
 
-HumanOS exists because capable people still make preventable mistakes, not from lack of skill, but from lack of awareness about their own state.
+Veto exists because capable people still make preventable mistakes, not from lack of skill, but from lack of awareness about their own state.
 
 It does not make you smarter. It helps you avoid being wrong at the wrong time.
 

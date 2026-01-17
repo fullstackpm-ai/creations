@@ -1,27 +1,27 @@
 ---
 stepsCompleted: [1, 2, 3, 4, 5]
 inputDocuments:
-  - humanOS/knowledge/HumanOperatingSystem.md
-  - humanOS/knowledge/orchestratorInstructions.md
-  - humanOS/knowledge/founderStateManagement.md
-  - humanOS/knowledge/taskManagementPro.md
-  - humanOS/knowledge/outcomeArchitect.md
-  - humanOS/knowledge/thinkingEngine.md
-  - humanOS/knowledge/emotionalGuardrail.md
+  - veto/knowledge/HumanOperatingSystem.md
+  - veto/knowledge/orchestratorInstructions.md
+  - veto/knowledge/founderStateManagement.md
+  - veto/knowledge/taskManagementPro.md
+  - veto/knowledge/outcomeArchitect.md
+  - veto/knowledge/thinkingEngine.md
+  - veto/knowledge/emotionalGuardrail.md
 date: 2026-01-16
 author: fullStackPm
-project_name: humanOS
+project_name: veto
 ---
 
-# Product Brief: HumanOS
+# Product Brief: Veto
 
 ## Executive Summary
 
-HumanOS is a living operating system that observes your state, protects decision quality, and continuously learns how you think, work, and live so that your actions stay aligned with what actually matters over time.
+Veto is a living operating system that observes your state, protects decision quality, and continuously learns how you think, work, and live so that your actions stay aligned with what actually matters over time.
 
-Unlike productivity tools built for the masses, HumanOS treats the human as a dynamic system requiring observability, not a user requiring motivation. It integrates physiology, cognition, emotion, and strategy into a unified architecture that adapts to the individual over time.
+Unlike productivity tools built for the masses, Veto treats the human as a dynamic system requiring observability, not a user requiring motivation. It integrates physiology, cognition, emotion, and strategy into a unified architecture that adapts to the individual over time.
 
-The system exists because subjective experience is no longer a reliable control surface for high-stakes, high-complexity lives. HumanOS provides the instrumentation and adaptive reasoning necessary to operate with clarity when intuition alone is insufficient.
+The system exists because subjective experience is no longer a reliable control surface for high-stakes, high-complexity lives. Veto provides the instrumentation and adaptive reasoning necessary to operate with clarity when intuition alone is insufficient.
 
 ---
 
@@ -61,7 +61,7 @@ The cost is not just productivity loss—it is compounding damage to decision qu
 
 ### Proposed Solution
 
-HumanOS is a **CLI-first MCP server** built in **Node.js/TypeScript** that provides the data and command layer for a cognitive operating system. **Claude Code serves as the reasoning layer**, orchestrating the system through structured tool calls.
+Veto is a **CLI-first MCP server** built in **Node.js/TypeScript** that provides the data and command layer for a cognitive operating system. **Claude Code serves as the reasoning layer**, orchestrating the system through structured tool calls.
 
 #### System Architecture
 
@@ -74,7 +74,7 @@ HumanOS is a **CLI-first MCP server** built in **Node.js/TypeScript** that provi
                           │ orchestrates via MCP tools
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                 HUMANOS CLI / MCP SERVER                    │
+│                    VETO CLI / MCP SERVER                    │
 │           (Node.js/TypeScript data + command layer)         │
 │   Tasks, Segments, State Logs, Learning Records, Outcomes   │
 └─────────────────────────┬───────────────────────────────────┘
@@ -102,19 +102,19 @@ HumanOS is a **CLI-first MCP server** built in **Node.js/TypeScript** that provi
 4. **Thinking Engine (TE)** — Structured deep reasoning pipeline (Activation → Amplification → Meta) for high-leverage decisions
 5. **Emotional Guardrail (EG)** — Protects decision quality by blocking high-stakes work during compromised states
 
-#### MCP Tools (Data Layer - HumanOS CLI)
+#### MCP Tools (Data Layer - Veto CLI)
 
 | Tool | Function |
 |------|----------|
-| `hos_assess` | Log current state, return Execution Profile |
-| `hos_plan` | Generate daily plan based on state + tasks + calendar |
-| `hos_start_segment` | Start tracking a work segment |
-| `hos_end_segment` | End segment, log duration + focus score |
-| `hos_wrap_day` | Generate daily summary, update Learning DB |
-| `hos_sync_calendar` | Read/write Google Calendar events |
-| `hos_query_patterns` | Query Learning DB for insights and trends |
-| `hos_get_outcomes` | Retrieve active outcomes for alignment checks |
-| `hos_log_decision` | Record Thinking Engine decisions to Knowledge Log |
+| `veto_assess` | Log current state, return Execution Profile |
+| `veto_plan` | Generate daily plan based on state + tasks + calendar |
+| `veto_start_segment` | Start tracking a work segment |
+| `veto_end_segment` | End segment, log duration + focus score |
+| `veto_wrap_day` | Generate daily summary, update Learning DB |
+| `veto_sync_calendar` | Read/write Google Calendar events |
+| `veto_query_patterns` | Query Learning DB for insights and trends |
+| `veto_get_outcomes` | Retrieve active outcomes for alignment checks |
+| `veto_log_decision` | Record Thinking Engine decisions to Knowledge Log |
 
 #### Data Stores (Supabase)
 
@@ -145,9 +145,9 @@ HumanOS is a **CLI-first MCP server** built in **Node.js/TypeScript** that provi
 
 ### Core Positioning
 
-HumanOS is not a productivity tool. It is a **cognitive authority** that earns trust through prediction accuracy. The product's core value is the right to say "no" — and be correct.
+Veto is not a productivity tool. It is a **cognitive authority** that earns trust through prediction accuracy. The product's core value is the right to say "no" — and be correct.
 
-> *"HumanOS does not promise to make you more productive. It promises to be right about when you shouldn't try."*
+> *"Veto does not promise to make you more productive. It promises to be right about when you shouldn't try."*
 
 ### Target User
 
@@ -170,21 +170,21 @@ HumanOS is not a productivity tool. It is a **cognitive authority** that earns t
 
 **Guardrails that refuse.**
 
-Most tools optimize engagement. HumanOS optimizes correctness.
+Most tools optimize engagement. Veto optimizes correctness.
 
-- **Productivity tools**: Help you do more → HumanOS helps you do **right**
-- **Wellness apps**: Track your state → HumanOS **acts on** your state
-- **AI assistants**: Answer questions → HumanOS **refuses to answer** when conditions are wrong
+- **Productivity tools**: Help you do more → Veto helps you do **right**
+- **Wellness apps**: Track your state → Veto **acts on** your state
+- **AI assistants**: Answer questions → Veto **refuses to answer** when conditions are wrong
 
 The wedge is *refusal as a feature*. Blocking deep work, blocking decisions, forcing deferral, enforcing recovery — these are things users say they want but tools are afraid to do.
 
-HumanOS protects users from subtle self-harm through bad timing and state blindness.
+Veto protects users from subtle self-harm through bad timing and state blindness.
 
 ### Trust Model
 
 **Trust is epistemic, not emotional.**
 
-HumanOS earns authority over time through demonstrated prediction accuracy. This implies:
+Veto earns authority over time through demonstrated prediction accuracy. This implies:
 
 | Phase | Behavior | User Experience |
 |-------|----------|-----------------|
@@ -192,7 +192,7 @@ HumanOS earns authority over time through demonstrated prediction accuracy. This
 | **Week 2-3** | Guardrails activate | System begins refusing based on accumulated data |
 | **Week 3+** | Prediction accuracy visible | User can verify system was right X% of the time |
 
-**The "aha moment":** When the system contradicts the user ("you shouldn't do deep work right now") and is later proven correct. That's when HumanOS stops being a tool and becomes a trusted operator.
+**The "aha moment":** When the system contradicts the user ("you shouldn't do deep work right now") and is later proven correct. That's when Veto stops being a tool and becomes a trusted operator.
 
 **Design implications:**
 - Show your work: expose the data behind every recommendation
@@ -202,7 +202,7 @@ HumanOS earns authority over time through demonstrated prediction accuracy. This
 
 ### Architecture Philosophy
 
-**HumanOS is not an AI product. It is a systems product that uses AI.**
+**Veto is not an AI product. It is a systems product that uses AI.**
 
 This distinction matters:
 - LLM is a **component**, not the product
@@ -229,7 +229,7 @@ This positioning implies:
 
 ### Primary User Archetype
 
-HumanOS serves a single user archetype with role variations. The system is **state-specific, not role-specific**.
+Veto serves a single user archetype with role variations. The system is **state-specific, not role-specific**.
 
 **Core Profile:**
 - High autonomy, high cognitive load, high cost of subtle errors
@@ -335,7 +335,7 @@ The target user leaves observable trails. They cluster around **thinking tools**
 
 ### Secondary Users
 
-**HumanOS is intentionally a single-player system.**
+**Veto is intentionally a single-player system.**
 
 Secondary beneficiaries exist indirectly but are not users:
 - An executive coach might review exported insights
@@ -350,7 +350,7 @@ The moment this becomes social or collaborative, it collapses into performance t
 ### User Journey
 
 #### Discovery
-- Finds HumanOS through word-of-mouth in high-agency communities
+- Finds Veto through word-of-mouth in high-agency communities
 - Attracted by the contrarian positioning: "a system that says no"
 - Already dissatisfied with productivity tools; skeptical but curious
 
@@ -396,12 +396,12 @@ When confidence is insufficient, the system says:
 The "aha" is not a clean dashboard or smart plan. It's the moment when:
 > "I wanted to push through, the system said don't, and later I realized it was right."
 
-That's when HumanOS stops being a tool and becomes a trusted operator.
+That's when Veto stops being a tool and becomes a trusted operator.
 
 **Key metric:** Track **time-to-first-correct-refusal** — that's the moment trust crystallizes.
 
 #### Long-term
-- HumanOS becomes invisible infrastructure for cognitive operations
+- Veto becomes invisible infrastructure for cognitive operations
 - Weekly reflections surface multi-week patterns
 - User's operating model evolves based on their own data
 - System earns increasing authority through demonstrated accuracy
@@ -432,7 +432,7 @@ That's when HumanOS stops being a tool and becomes a trusted operator.
 
 ### Growth Model
 
-**HumanOS grows by reputation, not virality.**
+**Veto grows by reputation, not virality.**
 
 This is an intentional design choice:
 - No social features that would corrupt honesty
@@ -452,7 +452,7 @@ This is an intentional design choice:
 
 | Exclusion | Reason |
 |-----------|--------|
-| People who want to "get more done" | HumanOS optimizes correctness, not output |
+| People who want to "get more done" | Veto optimizes correctness, not output |
 | Mass-market wellness seekers | Too much friction, too slow to value |
 | Users who need motivation | System assumes capability, not aspiration |
 | Anyone uncomfortable with contradiction | System will say "no" and be right |
@@ -463,15 +463,15 @@ This is an intentional design choice:
 
 ## Success Metrics
 
-*Success for HumanOS is defined by decision quality and trust formation, not activity.*
+*Success for Veto is defined by decision quality and trust formation, not activity.*
 
 ### Core Success Philosophy
 
 Traditional tools succeed by increasing activity.
-**HumanOS succeeds by preventing invisible failure.**
+**Veto succeeds by preventing invisible failure.**
 
 The ultimate success metric:
-> **When HumanOS intervenes less often over time, and is trusted more when it does.**
+> **When Veto intervenes less often over time, and is trusted more when it does.**
 
 ---
 
@@ -560,7 +560,7 @@ Trust forms when:
 - Team upsell
 - Enterprise conversion
 
-These incentives would corrupt the product. HumanOS remains deliberately single-player and high-trust.
+These incentives would corrupt the product. Veto remains deliberately single-player and high-trust.
 
 ---
 
@@ -568,7 +568,7 @@ These incentives would corrupt the product. HumanOS remains deliberately single-
 
 #### At 3 Months
 
-HumanOS is working if:
+Veto is working if:
 
 | Signal | Measurement |
 |--------|-------------|
@@ -583,7 +583,7 @@ HumanOS is working if:
 
 #### At 12 Months
 
-HumanOS is truly working if:
+Veto is truly working if:
 
 | Signal | Description |
 |--------|-------------|
@@ -619,7 +619,7 @@ It is the correct metric for a cognitive authority.
 
 Anything that does not directly increase the probability of a **correct refusal within 21 days** is out. Not postponed. Out.
 
-HumanOS earns trust in exactly one way in the MVP:
+Veto earns trust in exactly one way in the MVP:
 
 > **observing state → correlating outcomes → refusing at the right time → being right**
 
@@ -633,12 +633,12 @@ Everything else is optional until that loop works.
 
 | Tool | Function | Why Essential |
 |------|----------|---------------|
-| `hos_assess` | Log current state | Primary signal ingestion; without this, no learning |
-| `hos_plan` | Generate daily plan | Anchors intent vs state, even if primitive |
-| `hos_start_segment` | Start tracking segment | Establishes execution boundaries |
-| `hos_end_segment` | End segment with outcome | Produces outcome-linked evidence |
-| `hos_wrap_day` | Generate daily summary | Feeds Learning DB, closes the loop |
-| `hos_query_patterns` | Query patterns for insights | Enables guardrails to exist |
+| `veto_assess` | Log current state | Primary signal ingestion; without this, no learning |
+| `veto_plan` | Generate daily plan | Anchors intent vs state, even if primitive |
+| `veto_start_segment` | Start tracking segment | Establishes execution boundaries |
+| `veto_end_segment` | End segment with outcome | Produces outcome-linked evidence |
+| `veto_wrap_day` | Generate daily summary | Feeds Learning DB, closes the loop |
+| `veto_query_patterns` | Query patterns for insights | Enables guardrails to exist |
 
 **These six form the minimum closed loop.**
 
@@ -650,7 +650,7 @@ Everything else is optional until that loop works.
 | **Task Management Pro (TMP)** | Segments only; no decomposition, no prioritization | Execution tracking |
 | **Emotional Guardrail (EG)** | Single guardrail only (deep work refusal) | The core differentiator |
 
-**MVP HumanOS is not strategic. It is protective.**
+**MVP Veto is not strategic. It is protective.**
 
 #### The ONE Guardrail
 
@@ -671,7 +671,7 @@ This guardrail:
 
 #### Confidence Calculation
 
-A simple, transparent heuristic. HumanOS wins by being **legible**, not clever.
+A simple, transparent heuristic. Veto wins by being **legible**, not clever.
 
 ```
 confidence = min(
@@ -751,7 +751,7 @@ The keystroke requirement creates a moment of reflection without moralizing.
 
 #### MVP Implementation
 
-At `hos_wrap_day`, the system explicitly asks:
+At `veto_wrap_day`, the system explicitly asks:
 
 ```
 You overrode a refusal today for segment [X].
@@ -827,8 +827,8 @@ Later phases can add inference from focus scores and completion patterns. In MVP
 
 | Item | Reason |
 |------|--------|
-| `hos_log_decision` | Thinking Engine introduces too many failure modes early |
-| `hos_get_outcomes` | Outcome Architect is post-MVP |
+| `veto_log_decision` | Thinking Engine introduces too many failure modes early |
+| `veto_get_outcomes` | Outcome Architect is post-MVP |
 | Outcome Architect module | Strategic alignment is orthogonal to trust formation |
 | Thinking Engine module | Requires high trust; adds irreversible damage if wrong early |
 | Multiple guardrails | Dilutes learning; one guardrail must work first |
@@ -840,7 +840,7 @@ Later phases can add inference from focus scores and completion patterns. In MVP
 
 | Item | Rationale |
 |------|-----------|
-| `hos_sync_calendar` (read-only) | Meetings are largest state disruptor, but integration complexity risks early trust |
+| `veto_sync_calendar` (read-only) | Meetings are largest state disruptor, but integration complexity risks early trust |
 | Calendar-aware state modification | Used only as state modifier, not auto-planning |
 
 **Phase 1 (Days 1-10):** Manual declaration ("heavy meeting day" / "light meeting day")
@@ -874,9 +874,9 @@ The README should:
 | Week | Focus | Deliverables |
 |------|-------|--------------|
 | **Week 0** | Spike + README | MCP integration spike; README written |
-| **Week 1** | Data layer | Supabase schema; `hos_assess`; `hos_wrap_day` |
-| **Week 2** | Execution tracking | `hos_start_segment`; `hos_end_segment`; refusal_events |
-| **Week 3** | The guardrail | `hos_query_patterns`; `hos_plan` with refusal logic; confidence calculation |
+| **Week 1** | Data layer | Supabase schema; `veto_assess`; `veto_wrap_day` |
+| **Week 2** | Execution tracking | `veto_start_segment`; `veto_end_segment`; refusal_events |
+| **Week 3** | The guardrail | `veto_query_patterns`; `veto_plan` with refusal logic; confidence calculation |
 | **Week 4** | Polish + first user | End-to-end testing; first real user onboarding |
 
 ---
@@ -924,7 +924,7 @@ The README should:
 
 ### MVP in One Sentence
 
-> **The HumanOS MVP is a single-user, state-aware system that observes daily work, learns from outcomes, and earns trust by being right when it refuses deep work — nothing more.**
+> **The Veto MVP is a single-user, state-aware system that observes daily work, learns from outcomes, and earns trust by being right when it refuses deep work — nothing more.**
 
 ### Success Feeling
 
