@@ -1,0 +1,31 @@
+{
+  "name": "veto",
+  "version": "0.1.0",
+  "description": "A cognitive operating system that earns the right to say no",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "test:connection": "npx tsx src/db/test-connection.ts",
+    "db:migrate": "npx tsx src/db/migrate.ts"
+  },
+  "keywords": [
+    "mcp",
+    "cognitive",
+    "guardrails",
+    "decision-quality"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  }
+}
