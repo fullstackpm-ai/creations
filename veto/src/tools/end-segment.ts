@@ -5,6 +5,7 @@ export interface EndSegmentInput {
   focus_score: number;
   completed?: boolean;
   notes?: string;
+  duration_minutes?: number;
 }
 
 export interface EndSegmentResult {
@@ -49,11 +50,16 @@ function calculateDurationMinutes(startTime: string, endTime: string): number {
 export async function vetoEndSegment(
   input: EndSegmentInput
 ): Promise<EndSegmentResult> {
-  const { focus_score, completed = true, notes } = input;
+  const { focus_score, completed = true, notes, duration_minutes: overrideDuration } = input;
 
   // Validate focus score
   if (focus_score < 1 || focus_score > 10) {
     throw new Error("Focus score must be between 1 and 10");
+  }
+
+  // Validate override duration if provided
+  if (overrideDuration !== undefined && (overrideDuration < 1 || overrideDuration > 1440)) {
+    throw new Error("Duration must be between 1 and 1440 minutes (24 hours)");
   }
 
   // Get active segment
@@ -65,7 +71,9 @@ export async function vetoEndSegment(
   }
 
   const now = new Date().toISOString();
-  const durationMinutes = calculateDurationMinutes(
+
+  // Use override duration if provided, otherwise calculate from timestamps
+  const durationMinutes = overrideDuration ?? calculateDurationMinutes(
     activeSegment.start_time,
     now
   );

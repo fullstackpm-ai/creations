@@ -70,6 +70,13 @@ const EndSegmentInputSchema = z.object({
     .default(true)
     .describe("Did you complete what you intended?"),
   notes: z.string().optional().describe("Any observations or notes"),
+  duration_minutes: z
+    .number()
+    .int()
+    .min(1)
+    .max(1440)
+    .optional()
+    .describe("Override calculated duration with actual minutes worked (1-1440)"),
 });
 
 const WrapDayInputSchema = z.object({
@@ -235,6 +242,12 @@ Records the outcome (focus score, completion status) for learning. This data fee
             notes: {
               type: "string",
               description: "Any observations or notes",
+            },
+            duration_minutes: {
+              type: "number",
+              description: "Override calculated duration with actual minutes worked. Use when reporting a segment after the fact.",
+              minimum: 1,
+              maximum: 1440,
             },
           },
           required: ["focus_score"],
