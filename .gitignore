@@ -1,5 +1,9 @@
 # MCP configuration (contains credentials)
 .mcp.json
 
+# Environment files (credentials)
+.env
+**/.env
+
 # OS files
 .DS_Store

@@ -7,6 +7,7 @@ This is a mono-repo containing multiple projects:
 | Project | Directory | Description |
 |---------|-----------|-------------|
 | veto | `/veto` | Cognitive operating system - MCP server for state tracking and guardrails |
+| trello-mcp | `/trello-mcp` | MCP server for Trello integration - boards, lists, cards CRUD |
 
 ## GitHub Issues
 
