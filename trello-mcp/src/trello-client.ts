@@ -67,6 +67,39 @@ export interface Attachment {
   isUpload: boolean;
 }
 
+export interface CustomField {
+  id: string;
+  idModel: string;
+  modelType: string;
+  fieldGroup: string;
+  name: string;
+  type: "number" | "text" | "date" | "checkbox" | "list";
+  options?: CustomFieldOption[];
+  pos: number;
+}
+
+export interface CustomFieldOption {
+  id: string;
+  idCustomField: string;
+  value: { text: string };
+  color: string;
+  pos: number;
+}
+
+export interface CustomFieldItem {
+  id: string;
+  idCustomField: string;
+  idModel: string;
+  modelType: string;
+  value: {
+    number?: string;
+    text?: string;
+    date?: string;
+    checked?: string;
+    idValue?: string;
+  };
+}
+
 export class TrelloClient {
   private apiKey: string;
   private token: string;
@@ -282,5 +315,86 @@ export class TrelloClient {
   // Attachments
   async getCardAttachments(cardId: string): Promise<Attachment[]> {
     return this.request<Attachment[]>("GET", `/cards/${cardId}/attachments`);
+  }
+
+  // Custom Fields
+  async getBoardCustomFields(boardId: string): Promise<CustomField[]> {
+    return this.request<CustomField[]>("GET", `/boards/${boardId}/customFields`);
+  }
+
+  async getCardCustomFieldItems(cardId: string): Promise<CustomFieldItem[]> {
+    return this.request<CustomFieldItem[]>(
+      "GET",
+      `/cards/${cardId}/customFieldItems`
+    );
+  }
+
+  async updateCardCustomField(
+    cardId: string,
+    customFieldId: string,
+    value: { number?: string; text?: string; date?: string; checked?: string; idValue?: string }
+  ): Promise<CustomFieldItem> {
+    return this.request<CustomFieldItem>(
+      "PUT",
+      `/cards/${cardId}/customField/${customFieldId}/item`,
+      { value }
+    );
+  }
+
+  async clearCardCustomField(
+    cardId: string,
+    customFieldId: string
+  ): Promise<CustomFieldItem> {
+    return this.request<CustomFieldItem>(
+      "PUT",
+      `/cards/${cardId}/customField/${customFieldId}/item`,
+      { value: "" }
+    );
+  }
+
+  // Convenience method to find Estimate field on a board
+  async findEstimateField(boardId: string): Promise<CustomField | undefined> {
+    const fields = await this.getBoardCustomFields(boardId);
+    return fields.find(
+      (f) => f.name.toLowerCase() === "estimate" && f.type === "number"
+    );
+  }
+
+  // Get Estimate (story points) for a card
+  async getCardEstimate(
+    cardId: string,
+    boardId: string
+  ): Promise<number | null> {
+    const estimateField = await this.findEstimateField(boardId);
+    if (!estimateField) {
+      return null;
+    }
+
+    const customFieldItems = await this.getCardCustomFieldItems(cardId);
+    const estimateItem = customFieldItems.find(
+      (item) => item.idCustomField === estimateField.id
+    );
+
+    if (!estimateItem || !estimateItem.value.number) {
+      return null;
+    }
+
+    return parseFloat(estimateItem.value.number);
+  }
+
+  // Set Estimate (story points) for a card
+  async setCardEstimate(
+    cardId: string,
+    boardId: string,
+    hours: number
+  ): Promise<CustomFieldItem | null> {
+    const estimateField = await this.findEstimateField(boardId);
+    if (!estimateField) {
+      throw new Error("Estimate custom field not found on this board");
+    }
+
+    return this.updateCardCustomField(cardId, estimateField.id, {
+      number: hours.toString(),
+    });
   }
 }

@@ -439,6 +439,130 @@ server.tool(
   }
 );
 
+// Custom Field tools
+server.tool(
+  "trello_get_board_custom_fields",
+  "Get all custom field definitions for a Trello board",
+  {
+    board_id: z.string().describe("The ID of the board"),
+  },
+  async ({ board_id }) => {
+    const fields = await trello.getBoardCustomFields(board_id);
+    return {
+      content: [{ type: "text", text: JSON.stringify(fields, null, 2) }],
+    };
+  }
+);
+
+server.tool(
+  "trello_get_card_custom_fields",
+  "Get all custom field values for a Trello card",
+  {
+    card_id: z.string().describe("The ID of the card"),
+  },
+  async ({ card_id }) => {
+    const items = await trello.getCardCustomFieldItems(card_id);
+    return {
+      content: [{ type: "text", text: JSON.stringify(items, null, 2) }],
+    };
+  }
+);
+
+server.tool(
+  "trello_update_card_custom_field",
+  "Update a custom field value on a Trello card",
+  {
+    card_id: z.string().describe("The ID of the card"),
+    custom_field_id: z.string().describe("The ID of the custom field"),
+    value: z
+      .object({
+        number: z.string().optional().describe("Value for number fields"),
+        text: z.string().optional().describe("Value for text fields"),
+        date: z.string().optional().describe("Value for date fields (ISO 8601)"),
+        checked: z
+          .enum(["true", "false"])
+          .optional()
+          .describe("Value for checkbox fields"),
+        idValue: z.string().optional().describe("Option ID for list fields"),
+      })
+      .describe("The value to set (use the appropriate field for the custom field type)"),
+  },
+  async ({ card_id, custom_field_id, value }) => {
+    const item = await trello.updateCardCustomField(card_id, custom_field_id, value);
+    return {
+      content: [{ type: "text", text: JSON.stringify(item, null, 2) }],
+    };
+  }
+);
+
+server.tool(
+  "trello_clear_card_custom_field",
+  "Clear/remove a custom field value from a Trello card",
+  {
+    card_id: z.string().describe("The ID of the card"),
+    custom_field_id: z.string().describe("The ID of the custom field to clear"),
+  },
+  async ({ card_id, custom_field_id }) => {
+    const item = await trello.clearCardCustomField(card_id, custom_field_id);
+    return {
+      content: [
+        { type: "text", text: `Custom field ${custom_field_id} cleared from card ${card_id}` },
+      ],
+    };
+  }
+);
+
+// Estimate (Story Points) convenience tools
+server.tool(
+  "trello_get_estimate",
+  "Get the Estimate (story points in hours) for a Trello card",
+  {
+    card_id: z.string().describe("The ID of the card"),
+    board_id: z.string().describe("The ID of the board (needed to find the Estimate field)"),
+  },
+  async ({ card_id, board_id }) => {
+    const estimate = await trello.getCardEstimate(card_id, board_id);
+    if (estimate === null) {
+      return {
+        content: [{ type: "text", text: "No estimate set for this card" }],
+      };
+    }
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify({ card_id, estimate_hours: estimate }, null, 2),
+        },
+      ],
+    };
+  }
+);
+
+server.tool(
+  "trello_set_estimate",
+  "Set the Estimate (story points in hours) for a Trello card",
+  {
+    card_id: z.string().describe("The ID of the card"),
+    board_id: z.string().describe("The ID of the board (needed to find the Estimate field)"),
+    hours: z.number().describe("The estimate in hours"),
+  },
+  async ({ card_id, board_id, hours }) => {
+    const result = await trello.setCardEstimate(card_id, board_id, hours);
+    return {
+      content: [
+        {
+          type: "text",
+          text: JSON.stringify(
+            { card_id, estimate_hours: hours, success: true },
+            null,
+            2
+          ),
+        },
+      ],
+    };
+  }
+);
+
 // Start the server
 async function main() {
   const transport = new StdioServerTransport();
