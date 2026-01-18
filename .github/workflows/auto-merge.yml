@@ -1,0 +1,66 @@
+name: Auto-merge approved PRs
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  auto-merge:
+    # Only auto-merge if:
+    # 1. PR-Agent approved (github-actions[bot])
+    # 2. PR has the "auto-merge" label
+    if: |
+      github.event.review.state == 'APPROVED' &&
+      github.event.review.user.login == 'github-actions[bot]'
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Check for auto-merge label
+        id: check-label
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          LABELS=$(gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json labels --jq '.labels[].name')
+          if echo "$LABELS" | grep -q "auto-merge"; then
+            echo "should_merge=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_merge=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Auto-merge PR
+        if: steps.check-label.outputs.should_merge == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge ${{ github.event.pull_request.number }} \
+            --repo ${{ github.repository }} \
+            --squash \
+            --auto \
+            --body "Auto-merged after PR-Agent approval
+
+          🤖 This PR was automatically merged after:
+          1. Claude Code implemented the changes
+          2. PR-Agent reviewed and approved
+
+          ---
+          Automated by Claude Code workflow"
+
+      - name: Comment if not auto-merging
+        if: steps.check-label.outputs.should_merge != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ github.event.pull_request.number }} --body "## ✅ PR-Agent Approved
+
+          This PR has been approved by PR-Agent but does not have the \`auto-merge\` label.
+
+          **To enable auto-merge for future PRs**, add the \`auto-merge\` label.
+
+          **To merge now**, a maintainer can merge manually or run:
+          \`\`\`
+          gh pr merge ${{ github.event.pull_request.number }} --squash
+          \`\`\`"

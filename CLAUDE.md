@@ -69,18 +69,57 @@ echo '{"project":"veto","title":"Issue title","problem":"Description of the prob
 - `solution` (optional): Proposed fix or enhancement
 - `label` (optional): "enhancement", "bug", or "documentation" (default: "enhancement")
 
-## PR Review Workflow
+## Autonomous PR Pipeline
 
-When a PR is created and pushed to GitHub, **PR-Agent** automatically:
-1. Reviews the code changes
-2. Generates a PR description
-3. Suggests improvements
+This repo has a fully autonomous code review and fix loop:
 
-**Commands available in PR comments:**
-- `/review` - Request a code review
+```
+Issue Created
+    ↓
+[Claude Code] → implements, creates PR
+    ↓
+[PR-Agent] → reviews, requests changes
+    ↓
+[Claude Code Action] → reads comments, applies fixes, pushes
+    ↓
+[PR-Agent] → re-reviews
+    ↓
+(loop max 3 iterations)
+    ↓
+[PR-Agent] → approves
+    ↓
+[Auto-merge] → squash merges (if "auto-merge" label present)
+```
+
+### Workflows
+
+| Workflow | Trigger | Action |
+|----------|---------|--------|
+| `pr-agent.yml` | PR opened/updated | Reviews code, suggests improvements |
+| `claude-fix-pr.yml` | PR-Agent requests changes | Analyzes feedback, applies fixes, pushes |
+| `auto-merge.yml` | PR-Agent approves | Auto-merges if "auto-merge" label present |
+
+### Manual Triggers
+
+- `/claude-fix` - Comment on PR to trigger Claude to address feedback
+- `/review` - Request PR-Agent review
 - `/improve` - Get improvement suggestions
-- `/describe` - Generate PR description
-- `/ask <question>` - Ask about the PR
+- `/ask <question>` - Ask PR-Agent about the PR
+
+### Safety Controls
+
+| Control | Setting |
+|---------|---------|
+| Max fix iterations | 3 (prevents infinite loops) |
+| Auto-merge | Requires "auto-merge" label |
+| Human override | Always possible via manual merge/close |
+
+### Labels
+
+- `auto-merge` - Enable auto-merge after PR-Agent approval
+- `enhancement` - New features
+- `bug` - Bug fixes
+- `documentation` - Docs updates
 
 ## Hooks Configured
 
@@ -90,5 +129,12 @@ When a PR is created and pushed to GitHub, **PR-Agent** automatically:
 
 ## Setup Requirements
 
-For PR-Agent to work, add this secret to GitHub repo settings:
-- `ANTHROPIC_API_KEY` - Your Anthropic API key for Claude
+Add these secrets to GitHub repo settings (Settings → Secrets → Actions):
+
+- `ANTHROPIC_API_KEY` - Your Anthropic API key for Claude (required for PR-Agent and Claude Fix)
+
+### Enable Auto-merge in Repo Settings
+
+1. Go to Settings → General → Pull Requests
+2. Check "Allow auto-merge"
+3. Check "Automatically delete head branches" (optional)

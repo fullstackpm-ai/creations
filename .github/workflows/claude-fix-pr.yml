@@ -1,0 +1,244 @@
+name: Claude Code - Address PR Feedback
+
+on:
+  # Trigger when PR-Agent adds a review
+  pull_request_review:
+    types: [submitted]
+  # Or manually via comment
+  issue_comment:
+    types: [created]
+
+jobs:
+  address-feedback:
+    # Only run if:
+    # 1. PR-Agent submitted a review with comments/changes requested, OR
+    # 2. Someone commented /claude-fix
+    if: |
+      (github.event_name == 'pull_request_review' &&
+       github.event.review.user.login == 'github-actions[bot]' &&
+       github.event.review.state == 'CHANGES_REQUESTED') ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       contains(github.event.comment.body, '/claude-fix'))
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.event.issue.pull_request.head.ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Get PR details and comments
+        id: pr-context
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number || github.event.issue.number }}
+
+          # Get PR info
+          gh pr view $PR_NUMBER --json title,body,files,comments,reviews > pr-context.json
+
+          # Get the diff
+          gh pr diff $PR_NUMBER > pr-diff.txt
+
+          # Get review comments (inline code comments)
+          gh api repos/${{ github.repository }}/pulls/$PR_NUMBER/comments > review-comments.json
+
+          # Count iterations to prevent infinite loops
+          ITERATION_COUNT=$(gh pr view $PR_NUMBER --json comments --jq '[.comments[] | select(.body | contains("[Claude Code Fix]"))] | length')
+          echo "iteration_count=$ITERATION_COUNT" >> $GITHUB_OUTPUT
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+
+      - name: Check iteration limit
+        if: steps.pr-context.outputs.iteration_count >= 3
+        run: |
+          echo "::warning::Reached maximum iteration limit (3). Manual review required."
+          gh pr comment ${{ steps.pr-context.outputs.pr_number }} --body "⚠️ **Claude Code**: Reached maximum fix iterations (3). Manual review required."
+          exit 0
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Analyze feedback and generate fixes
+        id: claude-fix
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Build the prompt for Claude
+          cat > prompt.txt << 'PROMPT_END'
+          You are a senior developer addressing PR review feedback.
+
+          ## Task
+          Analyze the PR review comments and generate the necessary code fixes.
+
+          ## PR Context
+          PROMPT_END
+
+          echo "### PR Details:" >> prompt.txt
+          cat pr-context.json >> prompt.txt
+
+          echo -e "\n### Code Diff:" >> prompt.txt
+          cat pr-diff.txt >> prompt.txt
+
+          echo -e "\n### Review Comments:" >> prompt.txt
+          cat review-comments.json >> prompt.txt
+
+          cat >> prompt.txt << 'PROMPT_END'
+
+          ## Instructions
+          1. Analyze each review comment
+          2. For each actionable comment, determine the fix needed
+          3. Output a JSON array of fixes in this format:
+
+          ```json
+          {
+            "analysis": "Brief summary of feedback received",
+            "fixes": [
+              {
+                "file": "path/to/file.ts",
+                "description": "What this fix does",
+                "search": "exact text to find",
+                "replace": "replacement text"
+              }
+            ],
+            "summary": "Summary of all changes made"
+          }
+          ```
+
+          Only include fixes for valid, actionable feedback. Skip stylistic preferences unless they're project conventions.
+          PROMPT_END
+
+          # Call Claude API
+          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
+            -H "Content-Type: application/json" \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -d @- << EOF
+          {
+            "model": "claude-sonnet-4-20250514",
+            "max_tokens": 4096,
+            "messages": [
+              {
+                "role": "user",
+                "content": $(jq -Rs . prompt.txt)
+              }
+            ]
+          }
+          EOF
+          )
+
+          # Extract the response content
+          echo "$RESPONSE" | jq -r '.content[0].text' > claude-response.txt
+
+          # Extract JSON from response (between ```json and ```)
+          sed -n '/```json/,/```/p' claude-response.txt | sed '1d;$d' > fixes.json
+
+          # Check if we have fixes
+          if [ -s fixes.json ] && jq -e '.fixes | length > 0' fixes.json > /dev/null 2>&1; then
+            echo "has_fixes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_fixes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Apply fixes
+        if: steps.claude-fix.outputs.has_fixes == 'true'
+        run: |
+          # Apply each fix using sed/python
+          python3 << 'EOF'
+          import json
+          import sys
+
+          with open('fixes.json', 'r') as f:
+              data = json.load(f)
+
+          for fix in data.get('fixes', []):
+              filepath = fix['file']
+              search = fix['search']
+              replace = fix['replace']
+
+              try:
+                  with open(filepath, 'r') as f:
+                      content = f.read()
+
+                  if search in content:
+                      content = content.replace(search, replace, 1)
+                      with open(filepath, 'w') as f:
+                          f.write(content)
+                      print(f"✓ Fixed: {filepath} - {fix['description']}")
+                  else:
+                      print(f"⚠ Could not find search text in {filepath}")
+              except FileNotFoundError:
+                  print(f"⚠ File not found: {filepath}")
+              except Exception as e:
+                  print(f"⚠ Error processing {filepath}: {e}")
+
+          # Save summary for commit message
+          with open('fix-summary.txt', 'w') as f:
+              f.write(data.get('summary', 'Address PR review feedback'))
+          EOF
+
+      - name: Commit and push fixes
+        if: steps.claude-fix.outputs.has_fixes == 'true'
+        run: |
+          git config user.name "Claude Code"
+          git config user.email "claude-code@anthropic.com"
+
+          SUMMARY=$(cat fix-summary.txt)
+          ITERATION=$((steps.pr-context.outputs.iteration_count + 1))
+
+          git add -A
+          git diff --staged --quiet || git commit -m "fix: Address PR review feedback (iteration $ITERATION)
+
+          $SUMMARY
+
+          [Claude Code Fix]
+
+          Co-Authored-By: Claude Sonnet <noreply@anthropic.com>"
+
+          git push
+
+      - name: Comment on PR
+        if: steps.claude-fix.outputs.has_fixes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ANALYSIS=$(jq -r '.analysis' fixes.json)
+          SUMMARY=$(jq -r '.summary' fixes.json)
+
+          gh pr comment ${{ steps.pr-context.outputs.pr_number }} --body "## 🤖 [Claude Code Fix] - Iteration $((steps.pr-context.outputs.iteration_count + 1))
+
+          ### Feedback Analyzed
+          $ANALYSIS
+
+          ### Changes Made
+          $SUMMARY
+
+          ---
+          PR-Agent will now re-review these changes."
+
+      - name: No fixes needed
+        if: steps.claude-fix.outputs.has_fixes != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ steps.pr-context.outputs.pr_number }} --body "## 🤖 [Claude Code]
+
+          Analyzed the review feedback but found no actionable code changes needed.
+
+          The feedback may be:
+          - Questions requiring human clarification
+          - Stylistic preferences outside project conventions
+          - Already addressed in previous commits
+
+          Manual review recommended."
