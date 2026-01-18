@@ -41,6 +41,32 @@ export interface Label {
   color: string;
 }
 
+export interface CheckItem {
+  id: string;
+  name: string;
+  state: "complete" | "incomplete";
+  pos: number;
+  idChecklist: string;
+}
+
+export interface Checklist {
+  id: string;
+  name: string;
+  idCard: string;
+  pos: number;
+  checkItems: CheckItem[];
+}
+
+export interface Attachment {
+  id: string;
+  name: string;
+  url: string;
+  mimeType: string;
+  bytes: number;
+  date: string;
+  isUpload: boolean;
+}
+
 export class TrelloClient {
   private apiKey: string;
   private token: string;
@@ -230,5 +256,31 @@ export class TrelloClient {
       "DELETE",
       `/cards/${cardId}/idLabels/${labelId}`
     );
+  }
+
+  // Checklists
+  async getCardChecklists(cardId: string): Promise<Checklist[]> {
+    return this.request<Checklist[]>("GET", `/cards/${cardId}/checklists`);
+  }
+
+  async getChecklist(checklistId: string): Promise<Checklist> {
+    return this.request<Checklist>("GET", `/checklists/${checklistId}`);
+  }
+
+  async updateCheckItem(
+    cardId: string,
+    checkItemId: string,
+    updates: { name?: string; state?: "complete" | "incomplete" }
+  ): Promise<CheckItem> {
+    return this.request<CheckItem>(
+      "PUT",
+      `/cards/${cardId}/checkItem/${checkItemId}`,
+      updates
+    );
+  }
+
+  // Attachments
+  async getCardAttachments(cardId: string): Promise<Attachment[]> {
+    return this.request<Attachment[]>("GET", `/cards/${cardId}/attachments`);
   }
 }

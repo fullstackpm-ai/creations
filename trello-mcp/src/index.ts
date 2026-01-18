@@ -386,6 +386,59 @@ server.tool(
   }
 );
 
+// Checklist tools
+server.tool(
+  "trello_get_card_checklists",
+  "Get all checklists on a Trello card",
+  {
+    card_id: z.string().describe("The ID of the card"),
+  },
+  async ({ card_id }) => {
+    const checklists = await trello.getCardChecklists(card_id);
+    return {
+      content: [{ type: "text", text: JSON.stringify(checklists, null, 2) }],
+    };
+  }
+);
+
+server.tool(
+  "trello_update_check_item",
+  "Update a checklist item (mark complete/incomplete or rename)",
+  {
+    card_id: z.string().describe("The ID of the card"),
+    check_item_id: z.string().describe("The ID of the checklist item"),
+    state: z
+      .enum(["complete", "incomplete"])
+      .optional()
+      .describe("Set item state to complete or incomplete"),
+    name: z.string().optional().describe("New name for the checklist item"),
+  },
+  async ({ card_id, check_item_id, state, name }) => {
+    const item = await trello.updateCheckItem(card_id, check_item_id, {
+      state,
+      name,
+    });
+    return {
+      content: [{ type: "text", text: JSON.stringify(item, null, 2) }],
+    };
+  }
+);
+
+// Attachment tools
+server.tool(
+  "trello_get_card_attachments",
+  "Get all attachments on a Trello card",
+  {
+    card_id: z.string().describe("The ID of the card"),
+  },
+  async ({ card_id }) => {
+    const attachments = await trello.getCardAttachments(card_id);
+    return {
+      content: [{ type: "text", text: JSON.stringify(attachments, null, 2) }],
+    };
+  }
+);
+
 // Start the server
 async function main() {
   const transport = new StdioServerTransport();
