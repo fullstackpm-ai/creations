@@ -93,8 +93,12 @@ server.tool(
       .number()
       .default(50)
       .describe("Maximum number of events to return"),
+    include_declined: z
+      .boolean()
+      .default(false)
+      .describe("Include events the user has declined (default: false)"),
   },
-  async ({ range, start_date, end_date, calendar_id, max_results }) => {
+  async ({ range, start_date, end_date, calendar_id, max_results, include_declined }) => {
     try {
       const { timeMin, timeMax } = resolveTimeRange(
         range,
@@ -105,7 +109,8 @@ server.tool(
         calendar_id,
         timeMin,
         timeMax,
-        max_results
+        max_results,
+        include_declined
       );
 
       if (events.length === 0) {
@@ -173,8 +178,12 @@ server.tool(
       .string()
       .default("primary")
       .describe("Calendar ID (default: primary)"),
+    include_declined: z
+      .boolean()
+      .default(false)
+      .describe("Include declined events when calculating free time (default: false)"),
   },
-  async ({ date, duration_minutes, start_hour, end_hour, calendar_id }) => {
+  async ({ date, duration_minutes, start_hour, end_hour, calendar_id, include_declined }) => {
     try {
       // Use provided date or today's date in PST
       const targetDateStr = date || getTodayPST();
@@ -184,7 +193,8 @@ server.tool(
         targetDateStr,
         duration_minutes,
         start_hour,
-        end_hour
+        end_hour,
+        include_declined
       );
 
       if (freeBlocks.length === 0) {

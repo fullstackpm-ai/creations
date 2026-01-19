@@ -6,6 +6,8 @@ import { getTimeInPST, toDateStringPST, parseDateAsPST, PST_TIMEZONE } from "./u
 // User timezone per CLAUDE.md
 const USER_TIMEZONE = PST_TIMEZONE;
 
+export type ResponseStatus = 'needsAction' | 'declined' | 'tentative' | 'accepted';
+
 export interface CalendarEvent {
   id: string;
   summary: string;
@@ -15,6 +17,7 @@ export interface CalendarEvent {
   location?: string;
   attendees?: string[];
   htmlLink?: string;
+  responseStatus?: ResponseStatus;
 }
 
 export interface FreeTimeBlock {
@@ -153,6 +156,10 @@ export class CalendarClient {
   }
 
   private mapEvent(event: calendar_v3.Schema$Event): CalendarEvent {
+    // Find the current user's response status from attendees
+    const selfAttendee = event.attendees?.find((a) => a.self === true);
+    const responseStatus = selfAttendee?.responseStatus as ResponseStatus | undefined;
+
     return {
       id: event.id!,
       summary: event.summary || "(No title)",
@@ -162,6 +169,7 @@ export class CalendarClient {
       location: event.location || undefined,
       attendees: event.attendees?.map((a) => a.email!).filter(Boolean),
       htmlLink: event.htmlLink || undefined,
+      responseStatus,
     };
   }
 
@@ -169,7 +177,8 @@ export class CalendarClient {
     calendarId: string,
     timeMin: Date,
     timeMax: Date,
-    maxResults: number = 50
+    maxResults: number = 50,
+    includeDeclined: boolean = false
   ): Promise<CalendarEvent[]> {
     await this.initialize();
 
@@ -184,7 +193,13 @@ export class CalendarClient {
         timeZone: USER_TIMEZONE,
       });
 
-      return (response.data.items || []).map((event) => this.mapEvent(event));
+      const events = (response.data.items || []).map((event) => this.mapEvent(event));
+
+      // Filter out declined events unless explicitly requested
+      if (!includeDeclined) {
+        return events.filter((event) => event.responseStatus !== 'declined');
+      }
+      return events;
     });
   }
 
@@ -206,7 +221,8 @@ export class CalendarClient {
     dateStr: string, // YYYY-MM-DD format, interpreted as PST
     minDurationMinutes: number,
     startHour: number,
-    endHour: number
+    endHour: number,
+    includeDeclined: boolean = false
   ): Promise<FreeTimeBlock[]> {
     await this.initialize();
 
@@ -226,7 +242,16 @@ export class CalendarClient {
         timeZone: USER_TIMEZONE,
       });
 
-      const events = response.data.items || [];
+      let events = response.data.items || [];
+
+      // Filter out declined events unless explicitly requested
+      if (!includeDeclined) {
+        events = events.filter((event) => {
+          const selfAttendee = event.attendees?.find((a) => a.self === true);
+          return selfAttendee?.responseStatus !== 'declined';
+        });
+      }
+
       const freeBlocks: FreeTimeBlock[] = [];
 
       let currentTime = dayStart;
