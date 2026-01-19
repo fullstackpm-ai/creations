@@ -39,6 +39,7 @@ export interface Segment {
   override_flag: boolean;
   state_log_id: string | null;
   trello_card_id: string | null;
+  notes: string | null;
 }
 
 export interface DailySummary {

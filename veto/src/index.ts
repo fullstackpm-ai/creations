@@ -12,6 +12,8 @@ import "dotenv/config";
 import { vetoAssess } from "./tools/assess.js";
 import { vetoStartSegment } from "./tools/start-segment.js";
 import { vetoEndSegment } from "./tools/end-segment.js";
+import { vetoEditSegment } from "./tools/edit-segment.js";
+import { vetoLogSegment } from "./tools/log-segment.js";
 import { vetoWrapDay } from "./tools/wrap-day.js";
 import { vetoQueryPatterns } from "./tools/query-patterns.js";
 import { vetoPlan } from "./tools/plan.js";
@@ -81,6 +83,56 @@ const EndSegmentInputSchema = z.object({
     .max(1440)
     .optional()
     .describe("Override calculated duration with actual minutes worked (1-1440)"),
+});
+
+const EditSegmentInputSchema = z.object({
+  segment_id: z.string().describe("ID of the segment to edit"),
+  focus_score: z
+    .number()
+    .int()
+    .min(1)
+    .max(10)
+    .optional()
+    .describe("New focus score (1-10)"),
+  completed: z.boolean().optional().describe("Update completion status"),
+  description: z.string().optional().describe("Update description"),
+  notes: z.string().optional().describe("Add notes (appended to existing)"),
+  duration_minutes: z
+    .number()
+    .int()
+    .min(1)
+    .max(1440)
+    .optional()
+    .describe("Adjust duration (recalculates end_time)"),
+});
+
+const LogSegmentInputSchema = z.object({
+  intended_type: z
+    .enum(["deep", "shallow"])
+    .describe("Type of work segment (deep or shallow)"),
+  start_time: z
+    .string()
+    .describe("When the segment started (ISO, 'HH:MM', 'X hours ago', 'X minutes ago')"),
+  duration_minutes: z
+    .number()
+    .int()
+    .min(1)
+    .max(1440)
+    .describe("How long the segment lasted in minutes"),
+  focus_score: z
+    .number()
+    .int()
+    .min(1)
+    .max(10)
+    .describe("How focused were you? (1-10)"),
+  completed: z
+    .boolean()
+    .optional()
+    .default(true)
+    .describe("Did you complete what you intended?"),
+  description: z.string().optional().describe("What you worked on"),
+  notes: z.string().optional().describe("Any observations"),
+  trello_card_id: z.string().optional().describe("Link to Trello card"),
 });
 
 const WrapDayInputSchema = z.object({
@@ -265,6 +317,96 @@ Records the outcome (focus score, completion status) for learning. This data fee
         },
       },
       {
+        name: "veto_edit_segment",
+        description: `Edit a past segment from today. Use this to correct mistakes like wrong focus score or update notes.
+
+Can only edit segments from the current day. Changes are logged for audit trail.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            segment_id: {
+              type: "string",
+              description: "ID of the segment to edit",
+            },
+            focus_score: {
+              type: "number",
+              description: "New focus score (1-10)",
+              minimum: 1,
+              maximum: 10,
+            },
+            completed: {
+              type: "boolean",
+              description: "Update completion status",
+            },
+            description: {
+              type: "string",
+              description: "Update description",
+            },
+            notes: {
+              type: "string",
+              description: "Add notes (appended to existing)",
+            },
+            duration_minutes: {
+              type: "number",
+              description: "Adjust duration in minutes (recalculates end_time)",
+              minimum: 1,
+              maximum: 1440,
+            },
+          },
+          required: ["segment_id"],
+        },
+      },
+      {
+        name: "veto_log_segment",
+        description: `Log a completed segment retroactively. Use this when you forgot to start/end a segment and want to record it after the fact.
+
+Supports flexible time formats: ISO timestamp, "HH:MM", "X hours ago", "X minutes ago".`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            intended_type: {
+              type: "string",
+              enum: ["deep", "shallow"],
+              description: "Type of work (deep or shallow)",
+            },
+            start_time: {
+              type: "string",
+              description: "When the segment started (ISO, 'HH:MM', '2 hours ago', '30 minutes ago')",
+            },
+            duration_minutes: {
+              type: "number",
+              description: "How long the segment lasted in minutes",
+              minimum: 1,
+              maximum: 1440,
+            },
+            focus_score: {
+              type: "number",
+              description: "How focused were you? (1-10)",
+              minimum: 1,
+              maximum: 10,
+            },
+            completed: {
+              type: "boolean",
+              description: "Did you complete what you intended?",
+              default: true,
+            },
+            description: {
+              type: "string",
+              description: "What you worked on",
+            },
+            notes: {
+              type: "string",
+              description: "Any observations",
+            },
+            trello_card_id: {
+              type: "string",
+              description: "Link to Trello card",
+            },
+          },
+          required: ["intended_type", "start_time", "duration_minutes", "focus_score"],
+        },
+      },
+      {
         name: "veto_wrap_day",
         description: `Generate a daily summary and close out the day. Call this at the end of your work day.
 
@@ -403,6 +545,32 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: "text",
               text: formatEndSegment(result),
+            },
+          ],
+        };
+      }
+
+      case "veto_edit_segment": {
+        const input = EditSegmentInputSchema.parse(args);
+        const result = await vetoEditSegment(input);
+        return {
+          content: [
+            {
+              type: "text",
+              text: formatEditSegment(result),
+            },
+          ],
+        };
+      }
+
+      case "veto_log_segment": {
+        const input = LogSegmentInputSchema.parse(args);
+        const result = await vetoLogSegment(input);
+        return {
+          content: [
+            {
+              type: "text",
+              text: formatLogSegment(result),
             },
           ],
         };
@@ -562,6 +730,58 @@ function formatEndSegment(
     "",
     "═══════════════════════════════════════",
   ];
+
+  return lines.join("\n");
+}
+
+function formatEditSegment(
+  result: Awaited<ReturnType<typeof vetoEditSegment>>
+): string {
+  const { segment, changes, message } = result;
+  const lines: string[] = [
+    "═══════════════════════════════════════",
+    "          SEGMENT EDITED                ",
+    "═══════════════════════════════════════",
+    "",
+    message,
+    "",
+  ];
+
+  if (changes.length > 0) {
+    lines.push("Changes:");
+    for (const change of changes) {
+      lines.push(`  • ${change}`);
+    }
+    lines.push("");
+  }
+
+  lines.push(`Segment ID: ${segment.id}`);
+  lines.push("");
+  lines.push("═══════════════════════════════════════");
+
+  return lines.join("\n");
+}
+
+function formatLogSegment(
+  result: Awaited<ReturnType<typeof vetoLogSegment>>
+): string {
+  const { segment, message } = result;
+  const lines: string[] = [
+    "═══════════════════════════════════════",
+    "          SEGMENT LOGGED                ",
+    "═══════════════════════════════════════",
+    "",
+    message,
+    "",
+    `Type:        ${segment.intended_type.toUpperCase()}`,
+    `Started:     ${new Date(segment.start_time).toLocaleTimeString("en-US", { timeZone: "America/Los_Angeles" })}`,
+    `Ended:       ${segment.end_time ? new Date(segment.end_time).toLocaleTimeString("en-US", { timeZone: "America/Los_Angeles" }) : "—"}`,
+    `Focus:       ${segment.focus_score}/10`,
+    `Completed:   ${segment.completed ? "Yes" : "No"}`,
+    segment.description ? `Description: ${segment.description}` : "",
+    "",
+    "═══════════════════════════════════════",
+  ].filter(Boolean);
 
   return lines.join("\n");
 }

@@ -27,7 +27,8 @@ CREATE TABLE IF NOT EXISTS segments (
   focus_score INT CHECK (focus_score >= 1 AND focus_score <= 10),
   override_flag BOOLEAN DEFAULT FALSE,
   state_log_id UUID REFERENCES state_logs(id),
-  trello_card_id TEXT
+  trello_card_id TEXT,
+  notes TEXT
 );
 
 -- 3. Daily Summaries: Learning DB feed
