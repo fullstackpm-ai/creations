@@ -219,6 +219,62 @@ server.tool(
 );
 
 server.tool(
+  "trello_get_cards_due_soon",
+  "Get cards due within a specified number of days. Uses Trello search API for efficient filtering. Due dates shown in PST.",
+  {
+    board_id: z.string().describe("The ID of the board"),
+    days: z
+      .number()
+      .default(7)
+      .describe("Number of days to look ahead (default: 7)"),
+    include_completed: z
+      .boolean()
+      .default(false)
+      .describe("Include cards with completed due dates"),
+    limit: z
+      .number()
+      .default(100)
+      .describe("Maximum number of cards to return (default: 100)"),
+  },
+  async ({ board_id, days, include_completed, limit }) => {
+    const cards = await trello.searchCardsByDue(board_id, days, {
+      includeComplete: include_completed,
+      limit,
+    });
+    const cardsWithPst = convertCardsDueToPst(cards);
+    return {
+      content: [{ type: "text", text: JSON.stringify(cardsWithPst, null, 2) }],
+    };
+  }
+);
+
+server.tool(
+  "trello_get_overdue_cards",
+  "Get cards that are past their due date. Uses Trello search API for efficient filtering. Due dates shown in PST.",
+  {
+    board_id: z.string().describe("The ID of the board"),
+    include_completed: z
+      .boolean()
+      .default(false)
+      .describe("Include cards with completed due dates"),
+    limit: z
+      .number()
+      .default(100)
+      .describe("Maximum number of cards to return (default: 100)"),
+  },
+  async ({ board_id, include_completed, limit }) => {
+    const cards = await trello.searchCardsByDue(board_id, "overdue", {
+      includeComplete: include_completed,
+      limit,
+    });
+    const cardsWithPst = convertCardsDueToPst(cards);
+    return {
+      content: [{ type: "text", text: JSON.stringify(cardsWithPst, null, 2) }],
+    };
+  }
+);
+
+server.tool(
   "trello_get_card",
   "Get details of a specific Trello card. Due date shown in PST.",
   {

@@ -273,6 +273,27 @@ export class TrelloClient {
     });
   }
 
+  // Search cards by due date filter (uses Trello search operators)
+  async searchCardsByDue(
+    boardId: string,
+    dueFilter: "day" | "week" | "month" | "overdue" | number,
+    options?: { includeComplete?: boolean; limit?: number }
+  ): Promise<Card[]> {
+    // Build query with due operator and board scope
+    const dueOperator = typeof dueFilter === "number" ? `due:${dueFilter}` : `due:${dueFilter}`;
+    const completeFilter = options?.includeComplete ? "" : " due:incomplete";
+    const query = `${dueOperator}${completeFilter} board:${boardId}`;
+
+    const result = await this.request<{ cards: Card[] }>("GET", "/search", {
+      query,
+      modelTypes: "cards",
+      cards_limit: options?.limit || 100,
+      card_fields: "id,name,desc,idList,idBoard,url,closed,due,dueComplete,labels,pos",
+    });
+
+    return result.cards;
+  }
+
   // Labels
   async getBoardLabels(boardId: string): Promise<Label[]> {
     return this.request<Label[]>("GET", `/boards/${boardId}/labels`);
