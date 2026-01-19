@@ -179,9 +179,16 @@ server.tool(
   "Get all cards in a Trello list. Due dates shown in PST.",
   {
     list_id: z.string().describe("The ID of the list"),
+    exclude_completed: z
+      .boolean()
+      .default(false)
+      .describe("Exclude cards marked as complete (dueComplete: true)"),
   },
-  async ({ list_id }) => {
-    const cards = await trello.getCards(list_id);
+  async ({ list_id, exclude_completed }) => {
+    let cards = await trello.getCards(list_id);
+    if (exclude_completed) {
+      cards = cards.filter((card: { dueComplete?: boolean }) => !card.dueComplete);
+    }
     const cardsWithPst = convertCardsDueToPst(cards);
     return {
       content: [{ type: "text", text: JSON.stringify(cardsWithPst, null, 2) }],
@@ -194,9 +201,16 @@ server.tool(
   "Get all cards on a Trello board. Due dates shown in PST.",
   {
     board_id: z.string().describe("The ID of the board"),
+    exclude_completed: z
+      .boolean()
+      .default(false)
+      .describe("Exclude cards marked as complete (dueComplete: true)"),
   },
-  async ({ board_id }) => {
-    const cards = await trello.getBoardCards(board_id);
+  async ({ board_id, exclude_completed }) => {
+    let cards = await trello.getBoardCards(board_id);
+    if (exclude_completed) {
+      cards = cards.filter((card: { dueComplete?: boolean }) => !card.dueComplete);
+    }
     const cardsWithPst = convertCardsDueToPst(cards);
     return {
       content: [{ type: "text", text: JSON.stringify(cardsWithPst, null, 2) }],
