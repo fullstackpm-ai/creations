@@ -175,7 +175,10 @@ server.tool(
   },
   async ({ date, duration_minutes, start_hour, end_hour, calendar_id }) => {
     try {
-      const targetDate = date ? new Date(date) : new Date();
+      // Parse date in local timezone (YYYY-MM-DD format)
+      // new Date("2026-01-19") is UTC midnight, which shifts the date in PST
+      // new Date("2026-01-19T00:00:00") is local midnight
+      const targetDate = date ? new Date(date + "T00:00:00") : new Date();
 
       const freeBlocks = await calendar.findFreeTime(
         calendar_id,
