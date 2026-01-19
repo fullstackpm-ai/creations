@@ -27,12 +27,37 @@ To get the current time, run: `date`
 
 ### Trello MCP Timezone Handling
 
-Trello API stores all dates in UTC. When working with Trello:
+Trello MCP automatically handles timezone conversion:
 
-- **Reading dates**: Convert UTC to PST (subtract 8 hours) before displaying to user
-- **Writing dates**: Convert PST to UTC (add 8 hours) before sending to Trello API
+- **Reading dates**: Cards include a `duePst` field with human-readable PST time
+- **Writing dates**: Input dates in PST format (e.g., `2024-12-31` or `2024-12-31T17:00`)
 
-Example: `2026-01-19T01:00:00.000Z` (UTC) = `2026-01-18 5:00 PM PST`
+The server converts automatically - no manual conversion needed.
+
+### Trello Task Planning
+
+When helping users with task planning, scheduling, or strategy for Trello cards, **always fetch the Estimate field** to provide accurate time-based recommendations.
+
+**Required steps for task planning requests:**
+
+1. **Get card details** - `trello_get_card` for name, description, due date, checklists
+2. **Get Estimate** - `trello_get_estimate` for hours estimate (story points)
+3. **Check calendar** - `gcal_find_free_time` or `gcal_list_events` for availability
+4. **Factor estimate into recommendations** - Use the hours estimate to suggest realistic scheduling
+
+**Example triggers** (when to auto-fetch Estimate):
+- "What's a good strategy to finish this task?"
+- "How should I plan my day around this card?"
+- "Can I complete this task today?"
+- "Help me schedule work on this Trello card"
+- Any task planning, time management, or workload assessment request
+
+**Example response pattern:**
+```
+The task "[Card Name]" has an estimate of 5 hours.
+You have 3 free hours this afternoon (2-5 PM).
+Recommendation: Start today, plan to complete tomorrow morning.
+```
 
 ## Development
 
