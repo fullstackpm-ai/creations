@@ -163,12 +163,12 @@ server.tool(
       .describe("Minimum block duration in minutes"),
     start_hour: z
       .number()
-      .default(9)
-      .describe("Earliest hour to consider (0-23, default: 9)"),
+      .default(6)
+      .describe("Earliest hour to consider (0-23, default: 6)"),
     end_hour: z
       .number()
-      .default(18)
-      .describe("Latest hour to consider (0-23, default: 18)"),
+      .default(20)
+      .describe("Latest hour to consider (0-23, default: 20)"),
     calendar_id: z
       .string()
       .default("primary")
