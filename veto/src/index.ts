@@ -522,7 +522,7 @@ function formatStartSegment(
     message,
     "",
     `Type:        ${segment.intended_type.toUpperCase()}`,
-    `Started:     ${new Date(segment.start_time).toLocaleTimeString()}`,
+    `Started:     ${new Date(segment.start_time).toLocaleTimeString("en-US", { timeZone: "America/Los_Angeles" })}`,
     segment.description ? `Description: ${segment.description}` : "",
     "",
     "End with veto_end_segment when done.",

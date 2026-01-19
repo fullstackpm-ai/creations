@@ -229,6 +229,7 @@ export async function vetoWrapDay(input: WrapDayInput): Promise<WrapDayResult> {
     lines.push("--- Segments ---");
     for (const seg of segmentDetails) {
       const startTime = new Date(seg.start_time).toLocaleTimeString("en-US", {
+        timeZone: "America/Los_Angeles",
         hour: "numeric",
         minute: "2-digit",
         hour12: true,
