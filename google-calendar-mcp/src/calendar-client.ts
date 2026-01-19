@@ -50,13 +50,20 @@ export class CalendarClient {
     this.calendar = google.calendar({ version: "v3", auth: this.oauth2Client });
   }
 
-  async initialize(): Promise<void> {
-    if (this.initialized) return;
+  async initialize(force = false): Promise<void> {
+    if (this.initialized && !force) return;
 
     const tokens = await loadTokens();
     if (!tokens) {
       throw new Error(
         'No tokens found. Run "npm run auth" in google-calendar-mcp to authorize.'
+      );
+    }
+
+    // Check for missing refresh token and provide helpful error
+    if (!tokens.refresh_token) {
+      throw new Error(
+        'No refresh token found. Run "npm run auth" in google-calendar-mcp to re-authorize.'
       );
     }
 
@@ -67,18 +74,61 @@ export class CalendarClient {
       token_type: tokens.token_type,
     });
 
-    // Set up auto-refresh listener
-    this.oauth2Client.on("tokens", async (newTokens) => {
-      await saveTokens({
-        access_token: newTokens.access_token ?? undefined,
-        refresh_token: newTokens.refresh_token ?? undefined,
-        expiry_date: newTokens.expiry_date ?? undefined,
-        token_type: newTokens.token_type ?? undefined,
-        scope: newTokens.scope ?? undefined,
+    // Set up auto-refresh listener (only once)
+    if (!this.initialized) {
+      this.oauth2Client.on("tokens", async (newTokens) => {
+        await saveTokens({
+          access_token: newTokens.access_token ?? undefined,
+          refresh_token: newTokens.refresh_token ?? undefined,
+          expiry_date: newTokens.expiry_date ?? undefined,
+          token_type: newTokens.token_type ?? undefined,
+          scope: newTokens.scope ?? undefined,
+        });
       });
-    });
+    }
 
     this.initialized = true;
+  }
+
+  /**
+   * Force reload tokens from disk. Call this after running `npm run auth`.
+   */
+  async reinitialize(): Promise<void> {
+    this.initialized = false;
+    await this.initialize(true);
+  }
+
+  /**
+   * Execute an API call with automatic token reload on auth errors.
+   * If the call fails with an auth error, reload tokens from disk and retry once.
+   */
+  private async withTokenReload<T>(operation: () => Promise<T>): Promise<T> {
+    try {
+      return await operation();
+    } catch (error: unknown) {
+      // Check if this is an auth-related error
+      const isAuthError =
+        error instanceof Error &&
+        (error.message.includes("No refresh token is set") ||
+          error.message.includes("invalid_grant") ||
+          error.message.includes("Token has been expired or revoked") ||
+          error.message.includes("Invalid Credentials"));
+
+      if (isAuthError) {
+        // Try reloading tokens from disk and retry once
+        try {
+          await this.reinitialize();
+          return await operation();
+        } catch (retryError) {
+          // If retry fails, throw a helpful error message
+          throw new Error(
+            `Authentication failed after token reload. Run "npm run auth" in google-calendar-mcp to re-authorize. Original error: ${error instanceof Error ? error.message : String(error)}`
+          );
+        }
+      }
+
+      throw error;
+    }
   }
 
   private formatEventTime(dateTime?: string | null, date?: string | null): string {
@@ -122,28 +172,32 @@ export class CalendarClient {
   ): Promise<CalendarEvent[]> {
     await this.initialize();
 
-    const response = await this.calendar.events.list({
-      calendarId,
-      timeMin: timeMin.toISOString(),
-      timeMax: timeMax.toISOString(),
-      maxResults,
-      singleEvents: true,
-      orderBy: "startTime",
-      timeZone: USER_TIMEZONE,
-    });
+    return this.withTokenReload(async () => {
+      const response = await this.calendar.events.list({
+        calendarId,
+        timeMin: timeMin.toISOString(),
+        timeMax: timeMax.toISOString(),
+        maxResults,
+        singleEvents: true,
+        orderBy: "startTime",
+        timeZone: USER_TIMEZONE,
+      });
 
-    return (response.data.items || []).map((event) => this.mapEvent(event));
+      return (response.data.items || []).map((event) => this.mapEvent(event));
+    });
   }
 
   async getEvent(calendarId: string, eventId: string): Promise<CalendarEvent> {
     await this.initialize();
 
-    const response = await this.calendar.events.get({
-      calendarId,
-      eventId,
-    });
+    return this.withTokenReload(async () => {
+      const response = await this.calendar.events.get({
+        calendarId,
+        eventId,
+      });
 
-    return this.mapEvent(response.data);
+      return this.mapEvent(response.data);
+    });
   }
 
   async findFreeTime(
@@ -162,56 +216,58 @@ export class CalendarClient {
     const dayEnd = new Date(date);
     dayEnd.setHours(endHour, 0, 0, 0);
 
-    // Get events for the day
-    const response = await this.calendar.events.list({
-      calendarId,
-      timeMin: dayStart.toISOString(),
-      timeMax: dayEnd.toISOString(),
-      singleEvents: true,
-      orderBy: "startTime",
-      timeZone: USER_TIMEZONE,
-    });
+    return this.withTokenReload(async () => {
+      // Get events for the day
+      const response = await this.calendar.events.list({
+        calendarId,
+        timeMin: dayStart.toISOString(),
+        timeMax: dayEnd.toISOString(),
+        singleEvents: true,
+        orderBy: "startTime",
+        timeZone: USER_TIMEZONE,
+      });
 
-    const events = response.data.items || [];
-    const freeBlocks: FreeTimeBlock[] = [];
+      const events = response.data.items || [];
+      const freeBlocks: FreeTimeBlock[] = [];
 
-    let currentTime = dayStart;
+      let currentTime = dayStart;
 
-    for (const event of events) {
-      const eventStart = new Date(event.start?.dateTime || event.start?.date!);
-      const eventEnd = new Date(event.end?.dateTime || event.end?.date!);
+      for (const event of events) {
+        const eventStart = new Date(event.start?.dateTime || event.start?.date!);
+        const eventEnd = new Date(event.end?.dateTime || event.end?.date!);
 
-      // If there's a gap before this event
-      if (eventStart > currentTime) {
-        const gapMinutes = (eventStart.getTime() - currentTime.getTime()) / 60000;
+        // If there's a gap before this event
+        if (eventStart > currentTime) {
+          const gapMinutes = (eventStart.getTime() - currentTime.getTime()) / 60000;
+          if (gapMinutes >= minDurationMinutes) {
+            freeBlocks.push({
+              start: this.formatEventTime(currentTime.toISOString(), null),
+              end: this.formatEventTime(eventStart.toISOString(), null),
+              durationMinutes: Math.round(gapMinutes),
+            });
+          }
+        }
+
+        // Move current time to end of this event
+        if (eventEnd > currentTime) {
+          currentTime = eventEnd;
+        }
+      }
+
+      // Check for free time after last event
+      if (currentTime < dayEnd) {
+        const gapMinutes = (dayEnd.getTime() - currentTime.getTime()) / 60000;
         if (gapMinutes >= minDurationMinutes) {
           freeBlocks.push({
             start: this.formatEventTime(currentTime.toISOString(), null),
-            end: this.formatEventTime(eventStart.toISOString(), null),
+            end: this.formatEventTime(dayEnd.toISOString(), null),
             durationMinutes: Math.round(gapMinutes),
           });
         }
       }
 
-      // Move current time to end of this event
-      if (eventEnd > currentTime) {
-        currentTime = eventEnd;
-      }
-    }
-
-    // Check for free time after last event
-    if (currentTime < dayEnd) {
-      const gapMinutes = (dayEnd.getTime() - currentTime.getTime()) / 60000;
-      if (gapMinutes >= minDurationMinutes) {
-        freeBlocks.push({
-          start: this.formatEventTime(currentTime.toISOString(), null),
-          end: this.formatEventTime(dayEnd.toISOString(), null),
-          durationMinutes: Math.round(gapMinutes),
-        });
-      }
-    }
-
-    return freeBlocks;
+      return freeBlocks;
+    });
   }
 
   async createEvent(
@@ -220,25 +276,27 @@ export class CalendarClient {
   ): Promise<CalendarEvent> {
     await this.initialize();
 
-    const response = await this.calendar.events.insert({
-      calendarId,
-      requestBody: {
-        summary: params.summary,
-        description: params.description,
-        location: params.location,
-        colorId: params.colorId,
-        start: {
-          dateTime: params.start,
-          timeZone: USER_TIMEZONE,
+    return this.withTokenReload(async () => {
+      const response = await this.calendar.events.insert({
+        calendarId,
+        requestBody: {
+          summary: params.summary,
+          description: params.description,
+          location: params.location,
+          colorId: params.colorId,
+          start: {
+            dateTime: params.start,
+            timeZone: USER_TIMEZONE,
+          },
+          end: {
+            dateTime: params.end,
+            timeZone: USER_TIMEZONE,
+          },
         },
-        end: {
-          dateTime: params.end,
-          timeZone: USER_TIMEZONE,
-        },
-      },
-    });
+      });
 
-    return this.mapEvent(response.data);
+      return this.mapEvent(response.data);
+    });
   }
 
   async updateEvent(
@@ -248,39 +306,43 @@ export class CalendarClient {
   ): Promise<CalendarEvent> {
     await this.initialize();
 
-    // Get existing event first
-    const existing = await this.calendar.events.get({
-      calendarId,
-      eventId,
-    });
+    return this.withTokenReload(async () => {
+      // Get existing event first
+      const existing = await this.calendar.events.get({
+        calendarId,
+        eventId,
+      });
 
-    const response = await this.calendar.events.update({
-      calendarId,
-      eventId,
-      requestBody: {
-        ...existing.data,
-        summary: params.summary ?? existing.data.summary,
-        description: params.description ?? existing.data.description,
-        location: params.location ?? existing.data.location,
-        colorId: params.colorId ?? existing.data.colorId,
-        start: params.start
-          ? { dateTime: params.start, timeZone: USER_TIMEZONE }
-          : existing.data.start,
-        end: params.end
-          ? { dateTime: params.end, timeZone: USER_TIMEZONE }
-          : existing.data.end,
-      },
-    });
+      const response = await this.calendar.events.update({
+        calendarId,
+        eventId,
+        requestBody: {
+          ...existing.data,
+          summary: params.summary ?? existing.data.summary,
+          description: params.description ?? existing.data.description,
+          location: params.location ?? existing.data.location,
+          colorId: params.colorId ?? existing.data.colorId,
+          start: params.start
+            ? { dateTime: params.start, timeZone: USER_TIMEZONE }
+            : existing.data.start,
+          end: params.end
+            ? { dateTime: params.end, timeZone: USER_TIMEZONE }
+            : existing.data.end,
+        },
+      });
 
-    return this.mapEvent(response.data);
+      return this.mapEvent(response.data);
+    });
   }
 
   async deleteEvent(calendarId: string, eventId: string): Promise<void> {
     await this.initialize();
 
-    await this.calendar.events.delete({
-      calendarId,
-      eventId,
+    return this.withTokenReload(async () => {
+      await this.calendar.events.delete({
+        calendarId,
+        eventId,
+      });
     });
   }
 }
