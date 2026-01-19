@@ -59,6 +59,22 @@ You have 3 free hours this afternoon (2-5 PM).
 Recommendation: Start today, plan to complete tomorrow morning.
 ```
 
+## Shell Command Best Practices
+
+### jq Filters
+
+When using jq to filter JSON output, always use **single quotes** around the filter expression to prevent shell interpretation issues:
+
+```bash
+# CORRECT - single quotes prevent shell expansion
+jq '.[] | select(.due != null)'
+
+# WRONG - do not escape ! as \! (causes jq syntax error)
+jq ".[] | select(.due \!= null)"
+```
+
+The `!` character in `!=` triggers bash history expansion when not properly quoted. Single quotes prevent all shell interpretation.
+
 ## Development
 
 Work directly on main. Keep it simple. Add process after value is proven.
