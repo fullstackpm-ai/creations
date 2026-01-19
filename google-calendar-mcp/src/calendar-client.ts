@@ -1,7 +1,7 @@
 import { google, calendar_v3 } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
 import { loadTokens, saveTokens, StoredTokens } from "./auth/token-store.js";
-import { getTimeInPST, toDateStringPST, PST_TIMEZONE } from "./utils/date.js";
+import { getTimeInPST, toDateStringPST, parseDateAsPST, PST_TIMEZONE } from "./utils/date.js";
 
 // User timezone per CLAUDE.md
 const USER_TIMEZONE = PST_TIMEZONE;
@@ -232,8 +232,16 @@ export class CalendarClient {
       let currentTime = dayStart;
 
       for (const event of events) {
-        const eventStart = new Date(event.start?.dateTime || event.start?.date!);
-        const eventEnd = new Date(event.end?.dateTime || event.end?.date!);
+        // Handle all-day events vs timed events differently
+        // All-day events have `date` (YYYY-MM-DD) but no `dateTime`
+        // Using new Date() on a date string parses as UTC, causing timezone issues
+        const isAllDay = !event.start?.dateTime && event.start?.date;
+        const eventStart = isAllDay
+          ? parseDateAsPST(event.start!.date!)
+          : new Date(event.start?.dateTime!);
+        const eventEnd = isAllDay
+          ? parseDateAsPST(event.end!.date!)
+          : new Date(event.end?.dateTime!);
 
         // If there's a gap before this event
         if (eventStart > currentTime) {
