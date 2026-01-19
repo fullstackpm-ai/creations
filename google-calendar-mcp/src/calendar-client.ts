@@ -1,9 +1,10 @@
 import { google, calendar_v3 } from "googleapis";
 import { OAuth2Client } from "google-auth-library";
 import { loadTokens, saveTokens, StoredTokens } from "./auth/token-store.js";
+import { getTimeInPST, toDateStringPST, PST_TIMEZONE } from "./utils/date.js";
 
 // User timezone per CLAUDE.md
-const USER_TIMEZONE = "America/Los_Angeles";
+const USER_TIMEZONE = PST_TIMEZONE;
 
 export interface CalendarEvent {
   id: string;
@@ -202,19 +203,17 @@ export class CalendarClient {
 
   async findFreeTime(
     calendarId: string,
-    date: Date,
+    dateStr: string, // YYYY-MM-DD format, interpreted as PST
     minDurationMinutes: number,
     startHour: number,
     endHour: number
   ): Promise<FreeTimeBlock[]> {
     await this.initialize();
 
-    // Set up time bounds for the day
-    const dayStart = new Date(date);
-    dayStart.setHours(startHour, 0, 0, 0);
-
-    const dayEnd = new Date(date);
-    dayEnd.setHours(endHour, 0, 0, 0);
+    // Set up time bounds for the day in PST
+    // Using getTimeInPST ensures correct handling regardless of server timezone
+    const dayStart = getTimeInPST(dateStr, startHour);
+    const dayEnd = getTimeInPST(dateStr, endHour);
 
     return this.withTokenReload(async () => {
       // Get events for the day

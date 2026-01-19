@@ -4,6 +4,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { CalendarClient } from "./calendar-client.js";
+import { getTodayPST } from "./utils/date.js";
 
 // Validate credentials
 const clientId = process.env.GOOGLE_CLIENT_ID;
@@ -175,14 +176,12 @@ server.tool(
   },
   async ({ date, duration_minutes, start_hour, end_hour, calendar_id }) => {
     try {
-      // Parse date in local timezone (YYYY-MM-DD format)
-      // new Date("2026-01-19") is UTC midnight, which shifts the date in PST
-      // new Date("2026-01-19T00:00:00") is local midnight
-      const targetDate = date ? new Date(date + "T00:00:00") : new Date();
+      // Use provided date or today's date in PST
+      const targetDateStr = date || getTodayPST();
 
       const freeBlocks = await calendar.findFreeTime(
         calendar_id,
-        targetDate,
+        targetDateStr,
         duration_minutes,
         start_hour,
         end_hour
@@ -193,7 +192,7 @@ server.tool(
           content: [
             {
               type: "text",
-              text: `No free blocks of ${duration_minutes}+ minutes found between ${start_hour}:00 and ${end_hour}:00.`,
+              text: `No free blocks of ${duration_minutes}+ minutes found on ${targetDateStr} between ${start_hour}:00 and ${end_hour}:00.`,
             },
           ],
         };
@@ -207,7 +206,7 @@ server.tool(
         content: [
           {
             type: "text",
-            text: `Free time blocks (${duration_minutes}+ min) on ${targetDate.toLocaleDateString()}:\n\n${formatted}`,
+            text: `Free time blocks (${duration_minutes}+ min) on ${targetDateStr}:\n\n${formatted}`,
           },
         ],
       };
