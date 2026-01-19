@@ -4,6 +4,11 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 import { TrelloClient } from "./trello-client.js";
+import {
+  convertCardDueToPst,
+  convertCardsDueToPst,
+  pstToUtc,
+} from "./utils/date.js";
 
 const apiKey = process.env.TRELLO_API_KEY;
 const token = process.env.TRELLO_TOKEN;
@@ -171,49 +176,52 @@ server.tool(
 // Card tools
 server.tool(
   "trello_get_cards",
-  "Get all cards in a Trello list",
+  "Get all cards in a Trello list. Due dates shown in PST.",
   {
     list_id: z.string().describe("The ID of the list"),
   },
   async ({ list_id }) => {
     const cards = await trello.getCards(list_id);
+    const cardsWithPst = convertCardsDueToPst(cards);
     return {
-      content: [{ type: "text", text: JSON.stringify(cards, null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(cardsWithPst, null, 2) }],
     };
   }
 );
 
 server.tool(
   "trello_get_board_cards",
-  "Get all cards on a Trello board",
+  "Get all cards on a Trello board. Due dates shown in PST.",
   {
     board_id: z.string().describe("The ID of the board"),
   },
   async ({ board_id }) => {
     const cards = await trello.getBoardCards(board_id);
+    const cardsWithPst = convertCardsDueToPst(cards);
     return {
-      content: [{ type: "text", text: JSON.stringify(cards, null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(cardsWithPst, null, 2) }],
     };
   }
 );
 
 server.tool(
   "trello_get_card",
-  "Get details of a specific Trello card",
+  "Get details of a specific Trello card. Due date shown in PST.",
   {
     card_id: z.string().describe("The ID of the card"),
   },
   async ({ card_id }) => {
     const card = await trello.getCard(card_id);
+    const cardWithPst = convertCardDueToPst(card);
     return {
-      content: [{ type: "text", text: JSON.stringify(card, null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(cardWithPst, null, 2) }],
     };
   }
 );
 
 server.tool(
   "trello_create_card",
-  "Create a new card in a Trello list",
+  "Create a new card in a Trello list. Due date input in PST, output shown in PST.",
   {
     list_id: z.string().describe("The ID of the list to add the card to"),
     name: z.string().describe("Name/title of the card"),
@@ -221,7 +229,7 @@ server.tool(
     due: z
       .string()
       .optional()
-      .describe("Due date in ISO 8601 format (e.g., 2024-12-31)"),
+      .describe("Due date in PST (e.g., 2024-12-31 or 2024-12-31T17:00)"),
     position: z
       .enum(["top", "bottom"])
       .optional()
@@ -234,19 +242,20 @@ server.tool(
   async ({ list_id, name, description, due, position, label_ids }) => {
     const card = await trello.createCard(list_id, name, {
       desc: description,
-      due,
+      due: due ? pstToUtc(due) : undefined,
       pos: position,
       idLabels: label_ids,
     });
+    const cardWithPst = convertCardDueToPst(card);
     return {
-      content: [{ type: "text", text: JSON.stringify(card, null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(cardWithPst, null, 2) }],
     };
   }
 );
 
 server.tool(
   "trello_update_card",
-  "Update a Trello card",
+  "Update a Trello card. Due date input in PST, output shown in PST.",
   {
     card_id: z.string().describe("The ID of the card"),
     name: z.string().optional().describe("New name for the card"),
@@ -255,7 +264,7 @@ server.tool(
       .string()
       .nullable()
       .optional()
-      .describe("Due date (ISO 8601) or null to remove"),
+      .describe("Due date in PST (e.g., 2024-12-31) or null to remove"),
     due_complete: z.boolean().optional().describe("Mark due date as complete"),
     closed: z.boolean().optional().describe("Archive the card if true"),
   },
@@ -263,19 +272,20 @@ server.tool(
     const card = await trello.updateCard(card_id, {
       name,
       desc: description,
-      due,
+      due: due ? pstToUtc(due) : due,
       dueComplete: due_complete,
       closed,
     });
+    const cardWithPst = convertCardDueToPst(card);
     return {
-      content: [{ type: "text", text: JSON.stringify(card, null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(cardWithPst, null, 2) }],
     };
   }
 );
 
 server.tool(
   "trello_move_card",
-  "Move a Trello card to a different list",
+  "Move a Trello card to a different list. Due date shown in PST.",
   {
     card_id: z.string().describe("The ID of the card to move"),
     list_id: z.string().describe("The ID of the destination list"),
@@ -286,22 +296,24 @@ server.tool(
   },
   async ({ card_id, list_id, position }) => {
     const card = await trello.moveCard(card_id, list_id, position);
+    const cardWithPst = convertCardDueToPst(card);
     return {
-      content: [{ type: "text", text: JSON.stringify(card, null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(cardWithPst, null, 2) }],
     };
   }
 );
 
 server.tool(
   "trello_archive_card",
-  "Archive a Trello card",
+  "Archive a Trello card. Due date shown in PST.",
   {
     card_id: z.string().describe("The ID of the card to archive"),
   },
   async ({ card_id }) => {
     const card = await trello.archiveCard(card_id);
+    const cardWithPst = convertCardDueToPst(card);
     return {
-      content: [{ type: "text", text: JSON.stringify(card, null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(cardWithPst, null, 2) }],
     };
   }
 );
@@ -323,7 +335,7 @@ server.tool(
 // Search tool
 server.tool(
   "trello_search_cards",
-  "Search for cards across Trello boards",
+  "Search for cards across Trello boards. Due dates shown in PST.",
   {
     query: z.string().describe("Search query"),
     board_id: z.string().optional().describe("Limit search to a specific board"),
@@ -331,8 +343,9 @@ server.tool(
   },
   async ({ query, board_id, limit }) => {
     const results = await trello.searchCards(query, { boardId: board_id, limit });
+    const cardsWithPst = convertCardsDueToPst(results.cards);
     return {
-      content: [{ type: "text", text: JSON.stringify(results.cards, null, 2) }],
+      content: [{ type: "text", text: JSON.stringify(cardsWithPst, null, 2) }],
     };
   }
 );
@@ -470,7 +483,7 @@ server.tool(
 
 server.tool(
   "trello_update_card_custom_field",
-  "Update a custom field value on a Trello card",
+  "Update a custom field value on a Trello card. Date values in PST.",
   {
     card_id: z.string().describe("The ID of the card"),
     custom_field_id: z.string().describe("The ID of the custom field"),
@@ -478,7 +491,7 @@ server.tool(
       .object({
         number: z.string().optional().describe("Value for number fields"),
         text: z.string().optional().describe("Value for text fields"),
-        date: z.string().optional().describe("Value for date fields (ISO 8601)"),
+        date: z.string().optional().describe("Value for date fields in PST (e.g., 2024-12-31)"),
         checked: z
           .enum(["true", "false"])
           .optional()
@@ -488,7 +501,11 @@ server.tool(
       .describe("The value to set (use the appropriate field for the custom field type)"),
   },
   async ({ card_id, custom_field_id, value }) => {
-    const item = await trello.updateCardCustomField(card_id, custom_field_id, value);
+    // Convert date to UTC if provided
+    const convertedValue = value.date
+      ? { ...value, date: pstToUtc(value.date) }
+      : value;
+    const item = await trello.updateCardCustomField(card_id, custom_field_id, convertedValue);
     return {
       content: [{ type: "text", text: JSON.stringify(item, null, 2) }],
     };
