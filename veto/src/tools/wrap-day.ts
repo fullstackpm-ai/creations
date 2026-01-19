@@ -12,9 +12,22 @@ export interface OverrideReview {
   needs_assessment: boolean;
 }
 
+export interface SegmentDetail {
+  id: string;
+  type: "deep" | "shallow";
+  description: string | null;
+  start_time: string;
+  end_time: string;
+  duration_minutes: number;
+  focus_score: number | null;
+  completed: boolean;
+  override: boolean;
+}
+
 export interface WrapDayResult {
   summary: DailySummary;
   segments_today: number;
+  segments: SegmentDetail[];
   override_reviews: OverrideReview[];
   message: string;
 }
@@ -131,6 +144,29 @@ export async function vetoWrapDay(input: WrapDayInput): Promise<WrapDayResult> {
     needs_assessment: true,
   }));
 
+  // Build segment details for output (sorted by start time)
+  const sortedSegments = [...todaySegments].sort((a, b) =>
+    new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+  );
+
+  const segmentDetails: SegmentDetail[] = sortedSegments.map((s) => {
+    const start = new Date(s.start_time).getTime();
+    const end = s.end_time ? new Date(s.end_time).getTime() : start;
+    const durationMinutes = Math.round((end - start) / (1000 * 60));
+
+    return {
+      id: s.id,
+      type: s.intended_type,
+      description: s.description,
+      start_time: s.start_time,
+      end_time: s.end_time || s.start_time,
+      duration_minutes: durationMinutes,
+      focus_score: s.focus_score,
+      completed: s.completed || false,
+      override: s.override_flag || false,
+    };
+  });
+
   // Check if summary already exists for today
   const { data: existingSummary } = await supabase
     .from("daily_summaries")
@@ -182,14 +218,36 @@ export async function vetoWrapDay(input: WrapDayInput): Promise<WrapDayResult> {
     summary = data as DailySummary;
   }
 
-  // Build message
+  // Build message with segment breakdown
   const lines: string[] = [
-    `Day wrapped: ${todaySegments.length} segments`,
+    `Day wrapped: ${todaySegments.length} segment(s)`,
+    "",
+    "--- Summary ---",
     `Deep work: ${deepWorkMinutes} min | Shallow: ${shallowWorkMinutes} min`,
     `Completion: ${completionRatio !== null ? Math.round(completionRatio * 100) + "%" : "N/A"}`,
     `Mean focus: ${meanFocus !== null ? meanFocus.toFixed(1) : "N/A"}`,
     `Energy trend: ${energyTrend}`,
   ];
+
+  // Add segment breakdown
+  if (segmentDetails.length > 0) {
+    lines.push("");
+    lines.push("--- Segments ---");
+    for (const seg of segmentDetails) {
+      const startTime = new Date(seg.start_time).toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+      const status = seg.completed ? "✓" : "✗";
+      const focusStr = seg.focus_score !== null ? `focus:${seg.focus_score}` : "";
+      const overrideStr = seg.override ? " [override]" : "";
+      const desc = seg.description ? ` - ${seg.description}` : "";
+      lines.push(
+        `  ${startTime} | ${seg.type} | ${seg.duration_minutes}min | ${status} ${focusStr}${overrideStr}${desc}`
+      );
+    }
+  }
 
   if (overrideReviews.length > 0) {
     lines.push("");
@@ -201,6 +259,7 @@ export async function vetoWrapDay(input: WrapDayInput): Promise<WrapDayResult> {
   return {
     summary,
     segments_today: todaySegments.length,
+    segments: segmentDetails,
     override_reviews: overrideReviews,
     message: lines.join("\n"),
   };
