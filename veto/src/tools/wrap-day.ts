@@ -1,5 +1,6 @@
 import { supabase } from "../db/client.js";
 import type { DailySummary, Segment, StateLog, EnergyTrend } from "../types.js";
+import { getTodayDatePST } from "../utils/date.js";
 
 export interface WrapDayInput {
   notable_events?: string;
@@ -33,13 +34,6 @@ export interface WrapDayResult {
 }
 
 /**
- * Get today's date in YYYY-MM-DD format
- */
-function getTodayDate(): string {
-  return new Date().toISOString().split("T")[0];
-}
-
-/**
  * Calculate energy trend from state logs
  */
 function calculateEnergyTrend(stateLogs: StateLog[]): EnergyTrend {
@@ -63,7 +57,7 @@ function calculateEnergyTrend(stateLogs: StateLog[]): EnergyTrend {
  */
 export async function vetoWrapDay(input: WrapDayInput): Promise<WrapDayResult> {
   const { notable_events } = input;
-  const today = getTodayDate();
+  const today = getTodayDatePST();
 
   // Check for active segment
   const { data: activeSegment } = await supabase

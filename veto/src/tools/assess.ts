@@ -5,6 +5,7 @@ import type {
   CircadianPhase,
   StateLog,
 } from "../types.js";
+import { getTodayDatePST } from "../utils/date.js";
 
 /**
  * Determine circadian phase based on current hour
@@ -17,13 +18,6 @@ function getCircadianPhase(): CircadianPhase {
   if (hour >= 14 && hour < 17) return "afternoon_dip";
   if (hour >= 17 && hour < 21) return "evening";
   return "night";
-}
-
-/**
- * Get today's date in YYYY-MM-DD format
- */
-function getTodayDate(): string {
-  return new Date().toISOString().split("T")[0];
 }
 
 /**
@@ -146,7 +140,7 @@ export async function vetoAssess(input: AssessInput): Promise<ExecutionProfile> 
   }
 
   const circadianPhase = getCircadianPhase();
-  const today = getTodayDate();
+  const today = getTodayDatePST();
 
   // Insert state log
   const { data, error } = await supabase

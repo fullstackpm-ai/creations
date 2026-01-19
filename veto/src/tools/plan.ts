@@ -1,5 +1,6 @@
 import { supabase } from "../db/client.js";
 import type { StateLog, Segment, CircadianPhase, RefusalEvent } from "../types.js";
+import { getTodayDatePST, getDaysAgoPST } from "../utils/date.js";
 
 export interface PlanInput {
   intended_work_type?: "deep" | "shallow";
@@ -38,7 +39,7 @@ export interface PlanResult {
  * Get the most recent state log from today
  */
 async function getLatestStateLog(): Promise<StateLog | null> {
-  const today = new Date().toISOString().split("T")[0];
+  const today = getTodayDatePST();
 
   const { data, error } = await supabase
     .from("state_logs")
@@ -164,9 +165,7 @@ async function getOverrideHistory(): Promise<{
   poor_outcome_rate: number;
 } | null> {
   const daysBack = 14;
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - daysBack);
-  const startDateStr = startDate.toISOString().split("T")[0];
+  const startDateStr = getDaysAgoPST(daysBack);
 
   const { data: refusals } = await supabase
     .from("refusal_events")
@@ -195,7 +194,7 @@ async function recordRefusal(
   confidence: number,
   reason: string
 ): Promise<string> {
-  const today = new Date().toISOString().split("T")[0];
+  const today = getTodayDatePST();
 
   const { data, error } = await supabase
     .from("refusal_events")

@@ -1,5 +1,6 @@
 import { supabase } from "../db/client.js";
 import type { Segment, StateLog, RefusalEvent, CircadianPhase } from "../types.js";
+import { getDaysAgoPST } from "../utils/date.js";
 
 export interface QueryPatternsInput {
   query_type:
@@ -61,9 +62,7 @@ async function queryDeepWorkOutcomes(
   input: QueryPatternsInput
 ): Promise<DeepWorkOutcome> {
   const daysBack = input.days_back || 14;
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - daysBack);
-  const startDateStr = startDate.toISOString().split("T")[0];
+  const startDateStr = getDaysAgoPST(daysBack);
 
   let query = supabase
     .from("segments")
@@ -156,9 +155,7 @@ async function queryStateCorrelations(
   input: QueryPatternsInput
 ): Promise<StateCorrelation[]> {
   const daysBack = input.days_back || 14;
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - daysBack);
-  const startDateStr = startDate.toISOString().split("T")[0];
+  const startDateStr = getDaysAgoPST(daysBack);
 
   // Get segments with state logs
   const { data: segments } = await supabase
@@ -250,9 +247,7 @@ async function queryOverrideAccuracy(
   input: QueryPatternsInput
 ): Promise<OverrideAccuracy> {
   const daysBack = input.days_back || 14;
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - daysBack);
-  const startDateStr = startDate.toISOString().split("T")[0];
+  const startDateStr = getDaysAgoPST(daysBack);
 
   const { data: refusals } = await supabase
     .from("refusal_events")

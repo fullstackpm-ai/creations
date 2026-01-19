@@ -1,5 +1,6 @@
 import { supabase } from "../db/client.js";
 import type { Segment, SegmentType } from "../types.js";
+import { getTodayDatePST } from "../utils/date.js";
 
 export interface StartSegmentInput {
   intended_type: SegmentType;
@@ -10,13 +11,6 @@ export interface StartSegmentInput {
 export interface StartSegmentResult {
   segment: Segment;
   message: string;
-}
-
-/**
- * Get today's date in YYYY-MM-DD format
- */
-function getTodayDate(): string {
-  return new Date().toISOString().split("T")[0];
 }
 
 /**
@@ -57,7 +51,7 @@ export async function vetoStartSegment(
     );
   }
 
-  const today = getTodayDate();
+  const today = getTodayDatePST();
   const now = new Date().toISOString();
 
   // Insert new segment
