@@ -6,6 +6,7 @@ export interface StartSegmentInput {
   intended_type: SegmentType;
   description?: string;
   state_log_id?: string;
+  trello_card_id?: string;
 }
 
 export interface StartSegmentResult {
@@ -40,7 +41,7 @@ async function getActiveSegment(): Promise<Segment | null> {
 export async function vetoStartSegment(
   input: StartSegmentInput
 ): Promise<StartSegmentResult> {
-  const { intended_type, description, state_log_id } = input;
+  const { intended_type, description, state_log_id, trello_card_id } = input;
 
   // Check for active segment
   const activeSegment = await getActiveSegment();
@@ -67,6 +68,7 @@ export async function vetoStartSegment(
       focus_score: null,
       override_flag: false,
       state_log_id: state_log_id || null,
+      trello_card_id: trello_card_id || null,
     })
     .select()
     .single();

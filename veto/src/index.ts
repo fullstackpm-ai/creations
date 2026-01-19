@@ -55,6 +55,10 @@ const StartSegmentInputSchema = z.object({
     .string()
     .optional()
     .describe("ID of the state log from veto_assess (for correlation)"),
+  trello_card_id: z
+    .string()
+    .optional()
+    .describe("Trello card ID to link this segment to (for task correlation)"),
 });
 
 const EndSegmentInputSchema = z.object({
@@ -198,7 +202,9 @@ The system will:
 
 The segment will remain open until you call veto_end_segment. Only one segment can be active at a time.
 
-Use this to establish execution boundaries and track what you intended to do.`,
+Use this to establish execution boundaries and track what you intended to do.
+
+If a trello_card_id is provided, the segment will be linked to that Trello card for correlation tracking.`,
         inputSchema: {
           type: "object",
           properties: {
@@ -215,6 +221,11 @@ Use this to establish execution boundaries and track what you intended to do.`,
               type: "string",
               description:
                 "ID of the state log from veto_assess (for correlation)",
+            },
+            trello_card_id: {
+              type: "string",
+              description:
+                "Trello card ID to link this segment to (for task correlation)",
             },
           },
           required: ["intended_type"],
@@ -524,6 +535,7 @@ function formatStartSegment(
     `Type:        ${segment.intended_type.toUpperCase()}`,
     `Started:     ${new Date(segment.start_time).toLocaleTimeString("en-US", { timeZone: "America/Los_Angeles" })}`,
     segment.description ? `Description: ${segment.description}` : "",
+    segment.trello_card_id ? `Trello Card: ${segment.trello_card_id}` : "",
     "",
     "End with veto_end_segment when done.",
     "",

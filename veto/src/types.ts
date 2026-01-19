@@ -38,6 +38,7 @@ export interface Segment {
   focus_score: number | null;
   override_flag: boolean;
   state_log_id: string | null;
+  trello_card_id: string | null;
 }
 
 export interface DailySummary {
