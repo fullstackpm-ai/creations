@@ -25,11 +25,12 @@ export async function loadTokens(): Promise<StoredTokens | null> {
 export async function saveTokens(tokens: Partial<StoredTokens>): Promise<void> {
   await mkdir(TOKEN_DIR, { recursive: true });
 
-  // Merge with existing tokens to preserve refresh_token if not provided
+  // Merge with existing tokens, explicitly preserving refresh_token if not provided
   const existing = await loadTokens();
   const merged = {
     ...existing,
     ...tokens,
+    refresh_token: tokens.refresh_token ?? existing?.refresh_token,
   };
 
   await writeFile(TOKEN_PATH, JSON.stringify(merged, null, 2));
