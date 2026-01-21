@@ -14,6 +14,7 @@ import { vetoStartSegment } from "./tools/start-segment.js";
 import { vetoEndSegment } from "./tools/end-segment.js";
 import { vetoEditSegment } from "./tools/edit-segment.js";
 import { vetoLogSegment } from "./tools/log-segment.js";
+import { vetoListSegments } from "./tools/list-segments.js";
 import { vetoWrapDay } from "./tools/wrap-day.js";
 import { vetoQueryPatterns } from "./tools/query-patterns.js";
 import { vetoPlan } from "./tools/plan.js";
@@ -133,6 +134,25 @@ const LogSegmentInputSchema = z.object({
   description: z.string().optional().describe("What you worked on"),
   notes: z.string().optional().describe("Any observations"),
   trello_card_id: z.string().optional().describe("Link to Trello card"),
+});
+
+const ListSegmentsInputSchema = z.object({
+  date: z
+    .string()
+    .optional()
+    .describe("Date to query: 'today', 'yesterday', or YYYY-MM-DD (default: today)"),
+  intended_type: z
+    .enum(["deep", "shallow"])
+    .optional()
+    .describe("Filter by segment type"),
+  limit: z
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .optional()
+    .default(20)
+    .describe("Maximum number of segments to return (default: 20)"),
 });
 
 const WrapDayInputSchema = z.object({
@@ -407,6 +427,33 @@ Supports flexible time formats: ISO timestamp, "HH:MM", "X hours ago", "X minute
         },
       },
       {
+        name: "veto_list_segments",
+        description: `List segments for a given date. Use this to review work logged or find segment IDs for editing.
+
+Returns segments with their IDs, times, durations, focus scores, and completion status. Also provides summary stats.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            date: {
+              type: "string",
+              description:
+                "Date to query: 'today', 'yesterday', or YYYY-MM-DD (default: today)",
+            },
+            intended_type: {
+              type: "string",
+              enum: ["deep", "shallow"],
+              description: "Filter by segment type",
+            },
+            limit: {
+              type: "number",
+              description: "Maximum number of segments to return (default: 20)",
+              minimum: 1,
+              maximum: 100,
+            },
+          },
+        },
+      },
+      {
         name: "veto_wrap_day",
         description: `Generate a daily summary and close out the day. Call this at the end of your work day.
 
@@ -571,6 +618,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: "text",
               text: formatLogSegment(result),
+            },
+          ],
+        };
+      }
+
+      case "veto_list_segments": {
+        const input = ListSegmentsInputSchema.parse(args);
+        const result = await vetoListSegments(input);
+        return {
+          content: [
+            {
+              type: "text",
+              text: formatListSegments(result),
             },
           ],
         };
@@ -782,6 +842,23 @@ function formatLogSegment(
     "",
     "═══════════════════════════════════════",
   ].filter(Boolean);
+
+  return lines.join("\n");
+}
+
+function formatListSegments(
+  result: Awaited<ReturnType<typeof vetoListSegments>>
+): string {
+  const { message } = result;
+  const lines: string[] = [
+    "═══════════════════════════════════════",
+    "          SEGMENTS LIST                 ",
+    "═══════════════════════════════════════",
+    "",
+    message,
+    "",
+    "═══════════════════════════════════════",
+  ];
 
   return lines.join("\n");
 }
