@@ -4,151 +4,99 @@ description: 'Context-aware daily planning with Trello and Calendar integration'
 
 # Veto Daily Planning
 
-A unified workflow that combines cognitive assessment with task and calendar awareness to recommend what to work on.
+**EXECUTE THIS WORKFLOW IMMEDIATELY. Do not describe what you will do - actually do it.**
 
-## Overview
+## Step 1: Gather Daily Context (run in parallel)
 
-This command chains together multiple data sources to provide context-aware recommendations:
-1. **Daily context** - What you've already done today (meetings, tasks, deep work)
-2. **Current state** - Your cognitive assessment
-3. **Remaining work** - Trello tasks with estimates
-4. **Available time** - Free time on your calendar
+Call these tools simultaneously:
 
-## Steps
+1. `mcp__google-calendar__gcal_list_events` with `range: "today"` - get today's meetings
+2. `mcp__veto__veto_query_patterns` with `query_type: "deep_work_outcomes"`, `days_back: 1` - get today's work segments
+3. `mcp__trello__trello_list_boards` - get user's boards (to identify primary board)
+4. `mcp__google-calendar__gcal_find_free_time` with today's date - get available time blocks
 
-### Step 1: Gather Daily Context
+## Step 2: Get Current Time and Tasks
 
-First, collect what has already happened today to understand cognitive depletion.
+After Step 1 completes:
 
-**1a. Get today's calendar events:**
-```
-Call mcp__google-calendar__gcal_list_events with range: "today"
-```
-- Count completed meetings (events that have ended)
-- Sum up meeting hours
-- Note remaining meetings
+1. Run `date` to get current time
+2. Call `mcp__trello__trello_get_cards_due_soon` with the primary board_id, `days: 3`, `include_completed: false`
 
-**1b. Get veto segments for today:**
-```
-Call mcp__veto__veto_query_patterns with query_type: "deep_work_outcomes", days_back: 1
-```
-- Sum up deep work minutes already logged today
-- Sum up shallow work minutes
+## Step 3: Get Task Estimates
 
-**1c. Get completed Trello tasks:**
-```
-Call mcp__trello__trello_get_board_cards with the user's board_id
-```
-- Filter for cards with dueComplete: true and due date today
-- Count completed tasks
+For each card returned in Step 2, call `mcp__trello__trello_get_estimate` with card_id and board_id.
 
-### Step 2: Calculate Cognitive Depletion
+## Step 4: Ask for Current State
 
-Based on the context gathered, estimate cognitive load already expended:
+Use `AskUserQuestion` to ask the user:
+- Energy level (1-10)
+- Focus level (1-10)
+- Hours of sleep last night
 
-- **Meeting hours**: Each hour of meetings = ~0.5 hours of deep work capacity lost
-- **Deep work hours**: Direct deduction from capacity
-- **Time of day**: Afternoon = naturally lower capacity
+## Step 5: Log State Assessment
 
-Calculate remaining cognitive capacity:
-```
-base_capacity = 4-6 hours (typical)
-meetings_cost = meeting_hours * 0.5
-remaining_capacity = base_capacity - deep_work_hours - meetings_cost
-```
+Call `mcp__veto__veto_assess` with the user's responses.
 
-### Step 3: Assess Current State
+## Step 6: Calculate and Present Daily Plan
 
-Ask the user for their current state:
-- Energy (1-10)
-- Focus (1-10)
-- Optional: mood, sleep hours
+Calculate cognitive depletion:
+- Meeting hours × 0.5 = cognitive cost
+- Base capacity (4-6 hrs) - deep work done - meeting cost = remaining capacity
 
-Call `mcp__veto__veto_assess` with their input.
-
-### Step 4: Get Remaining Tasks
-
-**4a. Get tasks due soon:**
-```
-Call mcp__trello__trello_get_cards_due_soon with board_id, days: 3, exclude_completed: true
-```
-
-**4b. For each card, get estimate if available:**
-```
-Call mcp__trello__trello_get_estimate with card_id, board_id
-```
-
-### Step 5: Check Available Time
+Present a formatted summary:
 
 ```
-Call mcp__google-calendar__gcal_find_free_time with date: today
-```
-- Identify free time blocks
-- Note total available hours remaining
-
-### Step 6: Generate Recommendations
-
-Based on all gathered data, recommend:
-
-1. **Work type**: Deep or shallow based on:
-   - Current state (energy/focus)
-   - Remaining cognitive capacity (after depletion)
-   - Time of day (circadian phase)
-
-2. **Specific tasks**: Rank tasks by:
-   - Due date urgency
-   - Estimate fits available time block
-   - Priority/importance
-
-3. **Time allocation**: Suggest which tasks to tackle in which time blocks
-
-## Output Format
-
-Present a summary like:
-
-```
-═══════════════════════════════════════
-         VETO DAILY PLAN
-═══════════════════════════════════════
-
-📊 TODAY'S CONTEXT
-  Meetings completed: 2 (1.5 hrs)
-  Deep work logged: 1.5 hrs
-  Tasks completed: 3
-
-  → Cognitive load: MODERATE
-  → Est. remaining capacity: 2-3 hrs
+═══════════════════════════════════════════════════════════════
+                      VETO DAILY PLAN
+                   [Day], [Date] · [Time]
+═══════════════════════════════════════════════════════════════
 
 📍 CURRENT STATE
-  Energy: 6/10 | Focus: 5/10
-  Phase: Afternoon Dip
+   Energy: X/10 | Focus: X/10 | Sleep: Xh
+   Phase: [Morning Peak/Midday/Afternoon Dip/Evening]
 
-  → Recommendation: SHALLOW WORK
+   → Recommendation: [DEEP WORK / SHALLOW WORK]
 
-📅 REMAINING SCHEDULE
-  2:00 PM - 3:00 PM: Free
-  3:00 PM - 3:30 PM: Meeting
-  3:30 PM - 5:00 PM: Free
+───────────────────────────────────────────────────────────────
 
-  → Available: 2.5 hrs
+📊 TODAY'S CONTEXT
+   Meetings completed: X (X hrs)
+   Deep work logged: X hrs
+   Tasks completed: X
 
-📋 SUGGESTED TASKS
+   → Cognitive load: [FRESH/LIGHT/MODERATE/HEAVY]
+   → Est. remaining capacity: X-X hrs
 
-  For your 2:00-3:00 block (shallow):
-  1. Review PR #123 (Est: 30 min)
-  2. Email follow-ups (Est: 20 min)
+───────────────────────────────────────────────────────────────
 
-  For your 3:30-5:00 block:
-  1. Documentation updates (Est: 1 hr)
-  2. Triage backlog (Est: 30 min)
+📅 SCHEDULE
+   [Visual representation of today's calendar]
 
-═══════════════════════════════════════
+   → Available: X hrs
+
+───────────────────────────────────────────────────────────────
+
+📋 TASKS DUE
+
+   [TODAY section if applicable]
+   [TOMORROW section if applicable]
+   [Later section if applicable]
+
+───────────────────────────────────────────────────────────────
+
+🎯 RECOMMENDED PLAN
+
+   [Specific task recommendations matched to time blocks]
+
+═══════════════════════════════════════════════════════════════
 ```
 
-## Configuration
+## Step 7: Offer to Start Segment
 
-The user should specify their primary Trello board ID. Ask on first use and remember for the session.
+Ask if the user wants to start tracking a work segment on any of the recommended tasks.
 
-## Example Interaction
+## Notes
 
-User: `/veto:daily`
+- Primary Trello board: If multiple boards exist, use "My Trello board" (68031b17e0ef40f25b75d2ab) as default
+- Always fetch Estimate field for task planning
+- Order tasks by Leverage field if available, then by due date
