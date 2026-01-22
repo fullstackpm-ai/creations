@@ -44,6 +44,10 @@ const AssessInputSchema = z.object({
     .optional()
     .describe("Hours of sleep last night"),
   notes: z.string().optional().describe("Any additional context"),
+  time_override: z
+    .string()
+    .optional()
+    .describe("Override current time for circadian phase calculation (ISO timestamp or HH:MM). Use when resuming a stale session."),
 });
 
 const StartSegmentInputSchema = z.object({
@@ -263,6 +267,11 @@ The system will:
             notes: {
               type: "string",
               description: "Any additional context",
+            },
+            time_override: {
+              type: "string",
+              description:
+                "Override current time for circadian phase (ISO timestamp or HH:MM). Use when resuming a stale session.",
             },
           },
           required: ["energy", "focus"],

@@ -8,10 +8,48 @@ import type {
 import { getTodayDatePST } from "../utils/date.js";
 
 /**
- * Determine circadian phase based on current hour
+ * Parse time override string into a Date object
+ * Supports: ISO timestamp, "HH:MM" format
  */
-function getCircadianPhase(): CircadianPhase {
-  const hour = new Date().getHours();
+function parseTimeOverride(timeOverride: string): Date | null {
+  // Try ISO format first
+  const isoDate = new Date(timeOverride);
+  if (!isNaN(isoDate.getTime())) {
+    return isoDate;
+  }
+
+  // Try HH:MM format
+  const timeMatch = timeOverride.match(/^(\d{1,2}):(\d{2})$/);
+  if (timeMatch) {
+    const hours = parseInt(timeMatch[1], 10);
+    const minutes = parseInt(timeMatch[2], 10);
+    if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+      const now = new Date();
+      now.setHours(hours, minutes, 0, 0);
+      return now;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Determine circadian phase based on current hour or override time
+ */
+function getCircadianPhase(timeOverride?: string): CircadianPhase {
+  let hour: number;
+
+  if (timeOverride) {
+    const overrideDate = parseTimeOverride(timeOverride);
+    if (overrideDate) {
+      hour = overrideDate.getHours();
+    } else {
+      // Invalid override, fall back to current time
+      hour = new Date().getHours();
+    }
+  } else {
+    hour = new Date().getHours();
+  }
 
   if (hour >= 6 && hour < 10) return "morning_peak";
   if (hour >= 10 && hour < 14) return "midday";
@@ -126,7 +164,7 @@ function getRecommendation(
  * Primary signal ingestion for the trust loop.
  */
 export async function vetoAssess(input: AssessInput): Promise<ExecutionProfile> {
-  const { energy, focus, mood, sleep_hours, notes } = input;
+  const { energy, focus, mood, sleep_hours, notes, time_override } = input;
 
   // Validate inputs
   if (energy < 1 || energy > 10) {
@@ -139,7 +177,7 @@ export async function vetoAssess(input: AssessInput): Promise<ExecutionProfile> 
     throw new Error("Sleep hours must be between 0 and 24");
   }
 
-  const circadianPhase = getCircadianPhase();
+  const circadianPhase = getCircadianPhase(time_override);
   const today = getTodayDatePST();
 
   // Insert state log

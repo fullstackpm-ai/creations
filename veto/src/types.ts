@@ -73,6 +73,7 @@ export interface AssessInput {
   mood?: string;
   sleep_hours?: number;
   notes?: string;
+  time_override?: string; // ISO timestamp or HH:MM to override current time for circadian phase
 }
 
 // Execution Profile - what the system recommends based on state
