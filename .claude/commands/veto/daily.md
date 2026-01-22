@@ -20,11 +20,13 @@ Call these tools simultaneously:
 After Step 1 completes:
 
 1. Run `date` to get current time
-2. Call `mcp__trello__trello_get_cards_due_soon` with the primary board_id, `days: 3`, `include_completed: false`
+2. Call these in parallel:
+   - `mcp__trello__trello_get_cards_due_soon` with the primary board_id, `days: 3`, `include_completed: false`
+   - `mcp__trello__trello_get_overdue_cards` with the primary board_id, `include_completed: false`
 
 ## Step 3: Get Task Estimates
 
-For each card returned in Step 2, call `mcp__trello__trello_get_estimate` with card_id and board_id.
+For each card returned in Step 2 (both due soon AND overdue), call `mcp__trello__trello_get_estimate` with card_id and board_id.
 
 ## Step 4: Ask for Current State
 
@@ -78,6 +80,7 @@ Present a formatted summary:
 
 📋 TASKS DUE
 
+   [OVERDUE section - show first with ⚠️ warning if any exist]
    [TODAY section if applicable]
    [TOMORROW section if applicable]
    [Later section if applicable]
