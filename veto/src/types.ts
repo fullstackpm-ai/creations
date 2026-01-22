@@ -13,6 +13,12 @@ export type SegmentType = "deep" | "shallow";
 
 export type OutcomeQuality = "good" | "neutral" | "poor";
 
+export type CaptureType = "idea" | "action";
+
+export type CaptureUrgency = "now" | "today" | "later";
+
+export type CaptureStatus = "pending" | "routed" | "dismissed";
+
 // Database row types
 export interface StateLog {
   id: string;
@@ -66,6 +72,18 @@ export interface RefusalEvent {
   outcome_quality: OutcomeQuality | null;
 }
 
+export interface Capture {
+  id: string;
+  created_at: string;
+  date: string;
+  segment_id: string | null;
+  capture_type: CaptureType;
+  content: string;
+  urgency: CaptureUrgency;
+  routed_to: string | null;
+  status: CaptureStatus;
+}
+
 // Input types for tools
 export interface AssessInput {
   energy: number;
@@ -74,6 +92,12 @@ export interface AssessInput {
   sleep_hours?: number;
   notes?: string;
   time_override?: string; // ISO timestamp or HH:MM to override current time for circadian phase
+}
+
+export interface CaptureInput {
+  content: string;
+  type?: CaptureType; // Auto-detected if segment active
+  urgency?: CaptureUrgency;
 }
 
 // Execution Profile - what the system recommends based on state

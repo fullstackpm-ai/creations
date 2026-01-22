@@ -57,9 +57,24 @@ CREATE TABLE IF NOT EXISTS refusal_events (
   outcome_quality TEXT CHECK (outcome_quality IN ('good', 'neutral', 'poor'))
 );
 
+-- 5. Captures: Ideas and action items captured during work
+CREATE TABLE IF NOT EXISTS captures (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  date DATE NOT NULL,
+  segment_id UUID REFERENCES segments(id),
+  capture_type TEXT CHECK (capture_type IN ('idea', 'action')) NOT NULL,
+  content TEXT NOT NULL,
+  urgency TEXT CHECK (urgency IN ('now', 'today', 'later')) DEFAULT 'later',
+  routed_to TEXT,  -- trello_card_id, github_issue_url, or null
+  status TEXT CHECK (status IN ('pending', 'routed', 'dismissed')) DEFAULT 'pending'
+);
+
 -- Indexes for common queries
 CREATE INDEX IF NOT EXISTS idx_state_logs_date ON state_logs(date);
 CREATE INDEX IF NOT EXISTS idx_segments_date ON segments(date);
 CREATE INDEX IF NOT EXISTS idx_segments_type ON segments(intended_type);
 CREATE INDEX IF NOT EXISTS idx_daily_summaries_date ON daily_summaries(date);
 CREATE INDEX IF NOT EXISTS idx_refusal_events_date ON refusal_events(date);
+CREATE INDEX IF NOT EXISTS idx_captures_date ON captures(date);
+CREATE INDEX IF NOT EXISTS idx_captures_status ON captures(status);

@@ -1,6 +1,7 @@
 import { supabase } from "../db/client.js";
-import type { DailySummary, Segment, StateLog, EnergyTrend } from "../types.js";
+import type { DailySummary, Segment, StateLog, EnergyTrend, Capture } from "../types.js";
 import { getTodayDatePST } from "../utils/date.js";
+import { getTodayCaptures } from "./capture.js";
 
 export interface WrapDayInput {
   notable_events?: string;
@@ -30,6 +31,10 @@ export interface WrapDayResult {
   segments_today: number;
   segments: SegmentDetail[];
   override_reviews: OverrideReview[];
+  captures: {
+    ideas: Capture[];
+    actions: Capture[];
+  };
   message: string;
 }
 
@@ -251,11 +256,45 @@ export async function vetoWrapDay(input: WrapDayInput): Promise<WrapDayResult> {
     );
   }
 
+  // Fetch today's captures
+  let captures = { ideas: [] as Capture[], actions: [] as Capture[] };
+  try {
+    captures = await getTodayCaptures();
+  } catch {
+    // Captures table may not exist yet, ignore
+  }
+
+  // Add captures section if any exist
+  if (captures.ideas.length > 0 || captures.actions.length > 0) {
+    lines.push("");
+    lines.push("--- Captures ---");
+
+    if (captures.ideas.length > 0) {
+      lines.push(`Ideas (${captures.ideas.length}):`);
+      for (const idea of captures.ideas) {
+        lines.push(`  💡 "${idea.content}"`);
+      }
+    }
+
+    if (captures.actions.length > 0) {
+      lines.push(`Action items (${captures.actions.length}):`);
+      for (const action of captures.actions) {
+        const urgencyIcon =
+          action.urgency === "now" ? "⚡" : action.urgency === "today" ? "📅" : "📥";
+        lines.push(`  ${urgencyIcon} "${action.content}"`);
+      }
+    }
+
+    lines.push("");
+    lines.push("Route these to Trello cards or dismiss as needed.");
+  }
+
   return {
     summary,
     segments_today: todaySegments.length,
     segments: segmentDetails,
     override_reviews: overrideReviews,
+    captures,
     message: lines.join("\n"),
   };
 }

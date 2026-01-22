@@ -18,6 +18,7 @@ import { vetoListSegments } from "./tools/list-segments.js";
 import { vetoWrapDay } from "./tools/wrap-day.js";
 import { vetoQueryPatterns } from "./tools/query-patterns.js";
 import { vetoPlan } from "./tools/plan.js";
+import { vetoCapture } from "./tools/capture.js";
 
 // Tool input schemas
 const AssessInputSchema = z.object({
@@ -208,6 +209,21 @@ const PlanInputSchema = z.object({
     .enum(["deep", "shallow"])
     .optional()
     .describe("What type of work are you planning to do?"),
+});
+
+const CaptureInputSchema = z.object({
+  content: z
+    .string()
+    .min(1)
+    .describe("The idea or action item to capture"),
+  type: z
+    .enum(["idea", "action"])
+    .optional()
+    .describe("Type of capture: 'idea' for unrelated thoughts, 'action' for task follow-ups. Defaults to 'idea' if no segment active."),
+  urgency: z
+    .enum(["now", "today", "later"])
+    .optional()
+    .describe("How urgent is this? 'now' = do immediately, 'today' = same day, 'later' = can wait. Defaults to 'later'."),
 });
 
 // Create server
@@ -557,6 +573,40 @@ If the guardrail refuses deep work, you can override, defer, or switch to shallo
           },
         },
       },
+      {
+        name: "veto_capture",
+        description: `Capture an idea or action item during work with minimal friction.
+
+Use this to quickly capture thoughts without breaking flow:
+- Ideas: Unrelated thoughts that pop up mid-session (e.g., "we need recurring progress meetings")
+- Actions: Follow-ups from current task (e.g., "follow up with Tim on DevOps role")
+
+Captures are stored and surfaced during /veto:wrap for routing to Trello cards or GitHub issues.
+
+If a segment is active, the capture is automatically linked to it.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            content: {
+              type: "string",
+              description: "The idea or action item to capture",
+            },
+            type: {
+              type: "string",
+              enum: ["idea", "action"],
+              description:
+                "Type: 'idea' for unrelated thoughts, 'action' for task follow-ups. Defaults to 'idea'.",
+            },
+            urgency: {
+              type: "string",
+              enum: ["now", "today", "later"],
+              description:
+                "Urgency: 'now' = immediate, 'today' = same day, 'later' = can wait. Defaults to 'later'.",
+            },
+          },
+          required: ["content"],
+        },
+      },
     ],
   };
 });
@@ -679,6 +729,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: "text",
               text: formatPlan(result),
+            },
+          ],
+        };
+      }
+
+      case "veto_capture": {
+        const input = CaptureInputSchema.parse(args);
+        const result = await vetoCapture(input);
+        return {
+          content: [
+            {
+              type: "text",
+              text: formatCapture(result),
             },
           ],
         };
@@ -957,6 +1020,39 @@ function formatPlan(result: Awaited<ReturnType<typeof vetoPlan>>): string {
 
   lines.push("");
   lines.push("═══════════════════════════════════════");
+
+  return lines.join("\n");
+}
+
+function formatCapture(
+  result: Awaited<ReturnType<typeof vetoCapture>>
+): string {
+  const { capture, segment_active, message } = result;
+
+  const typeIcon = capture.capture_type === "idea" ? "💡" : "✅";
+  const urgencyLabel =
+    capture.urgency === "now"
+      ? "⚡ NOW"
+      : capture.urgency === "today"
+        ? "📅 TODAY"
+        : "📥 LATER";
+
+  const lines: string[] = [
+    "═══════════════════════════════════════",
+    "          CAPTURED                      ",
+    "═══════════════════════════════════════",
+    "",
+    `${typeIcon} ${capture.capture_type.toUpperCase()}`,
+    "",
+    `"${capture.content}"`,
+    "",
+    `Urgency:  ${urgencyLabel}`,
+    segment_active ? "Linked:   Current segment" : "Linked:   None (no active segment)",
+    "",
+    message,
+    "",
+    "═══════════════════════════════════════",
+  ];
 
   return lines.join("\n");
 }
