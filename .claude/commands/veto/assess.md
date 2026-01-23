@@ -6,6 +6,17 @@ description: 'Log your current cognitive state (energy, focus, mood, sleep)'
 
 Log your current cognitive and physiological state to build patterns over time.
 
+## When to Use
+
+| Use `/veto:assess` when... | Use `/veto:daily` instead when... |
+|---------------------------|-----------------------------------|
+| Mid-day state check-in | Starting your work day |
+| State changed significantly (energy crash, second wind) | You want full planning with tasks + calendar |
+| Quick state log without planning overhead | First assessment of the day |
+| Building data for pattern recognition | You need task recommendations |
+
+**Rule of thumb**: `/veto:daily` is the primary workflow. Use `/veto:assess` for standalone state updates between daily planning sessions.
+
 ## Steps
 
 1. Ask the user for their current state:

@@ -4,6 +4,24 @@ description: 'Context-aware daily planning with Trello and Calendar integration'
 
 # Veto Daily Planning
 
+## When to Use
+
+**`/veto:daily` is the primary entry point for Veto.** Use it:
+
+- At the **start of your work day** (morning planning)
+- **After a long break** (lunch, meetings) to re-orient
+- When you need **full context**: calendar, tasks, estimates, recommendations
+
+**What it does:**
+1. Checks calendar and available time
+2. Fetches tasks from Trello (due soon + overdue)
+3. Collects or reuses your state assessment
+4. Presents a comprehensive daily plan with recommendations
+
+**Don't want full planning?** Use `/veto:assess` for a quick state log without the overhead.
+
+---
+
 **EXECUTE THIS WORKFLOW IMMEDIATELY. Do not describe what you will do - actually do it.**
 
 ## Step 1: Gather Daily Context (run in parallel)
