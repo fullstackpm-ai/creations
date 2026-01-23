@@ -20,6 +20,7 @@ import { vetoQueryPatterns } from "./tools/query-patterns.js";
 import { vetoPlan } from "./tools/plan.js";
 import { vetoCapture, vetoRouteCapture } from "./tools/capture.js";
 import { vetoGetTodayState } from "./tools/get-today-state.js";
+import { vetoSqlQuery } from "./tools/sql-query.js";
 
 // Tool input schemas
 const AssessInputSchema = z.object({
@@ -236,6 +237,13 @@ const RouteCaptureInputSchema = z.object({
     .string()
     .optional()
     .describe("URL or identifier of destination (required for trello/github actions)"),
+});
+
+const SqlQueryInputSchema = z.object({
+  query: z
+    .string()
+    .min(1)
+    .describe("SQL query to execute against the Veto database"),
 });
 
 // Create server
@@ -666,6 +674,31 @@ If an assessment exists within the last few hours, consider using that data inst
           properties: {},
         },
       },
+      {
+        name: "veto_sql_query",
+        description: `Execute a SQL query against the Veto database.
+
+Available tables:
+- state_logs: energy, focus, mood, sleep_hours, circadian_phase, date
+- segments: intended_type, description, start_time, end_time, focus_score, completed
+- daily_summaries: completion_ratio, mean_focus, deep_work_minutes, shallow_work_minutes
+- refusal_events: refusal_type, confidence_at_refusal, reason, user_overrode
+- captures: capture_type, content, urgency, status, routed_to
+
+Supports SELECT, INSERT, UPDATE, DELETE. Results returned as JSON array.
+
+IMPORTANT: Requires setup. Run veto/src/db/setup-sql-query.sql in Supabase first.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            query: {
+              type: "string",
+              description: "SQL query to execute",
+            },
+          },
+          required: ["query"],
+        },
+      },
     ],
   };
 });
@@ -826,6 +859,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: "text",
               text: formatGetTodayState(result),
+            },
+          ],
+        };
+      }
+
+      case "veto_sql_query": {
+        const input = SqlQueryInputSchema.parse(args);
+        const result = await vetoSqlQuery(input);
+        return {
+          content: [
+            {
+              type: "text",
+              text: formatSqlQuery(result),
             },
           ],
         };
@@ -1188,6 +1234,29 @@ function formatGetTodayState(
     "",
     "═══════════════════════════════════════",
   ];
+
+  return lines.join("\n");
+}
+
+function formatSqlQuery(
+  result: Awaited<ReturnType<typeof vetoSqlQuery>>
+): string {
+  const { success, data, row_count, error, query } = result;
+
+  if (!success) {
+    return `ERROR: ${error}\n\nQuery: ${query}`;
+  }
+
+  const lines: string[] = [
+    `Query executed successfully (${row_count} row${row_count === 1 ? "" : "s"})`,
+    "",
+  ];
+
+  if (data && data.length > 0) {
+    lines.push(JSON.stringify(data, null, 2));
+  } else {
+    lines.push("(no results)");
+  }
 
   return lines.join("\n");
 }
