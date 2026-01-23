@@ -78,8 +78,23 @@ Call `mcp__veto__veto_assess` with the user's responses.
 
 ## Step 6: Calculate and Present Daily Plan
 
+### Identifying Self-Blocked Deep Work Time
+
+Events with these keywords in the title are **protected deep work time**, NOT meetings:
+- "Blocked Time"
+- "Focus Time"
+- "Deep Work"
+- "Hold"
+
+When processing calendar events:
+1. **Do NOT count these as meeting hours** - they don't deplete cognitive capacity
+2. **Show them as available deep work blocks** in the schedule (use ░░░ instead of ▓▓▓)
+3. **Include their duration in "Available" time calculation**
+
+### Cognitive Depletion Calculation
+
 Calculate cognitive depletion:
-- Meeting hours × 0.5 = cognitive cost
+- Meeting hours × 0.5 = cognitive cost (exclude self-blocked events)
 - Base capacity (4-6 hrs) - deep work done - meeting cost = remaining capacity
 
 Present a formatted summary:
@@ -111,7 +126,9 @@ Present a formatted summary:
 📅 SCHEDULE
    [Visual representation of today's calendar]
 
-   → Available: X hrs
+   Legend: ▓▓▓ = meetings  ░░░ = deep work blocks (self-blocked)
+
+   → Available: X hrs (includes self-blocked deep work time)
 
 ───────────────────────────────────────────────────────────────
 
