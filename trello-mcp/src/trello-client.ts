@@ -333,6 +333,33 @@ export class TrelloClient {
     );
   }
 
+  async createChecklist(
+    cardId: string,
+    name: string,
+    pos?: "top" | "bottom"
+  ): Promise<Checklist> {
+    return this.request<Checklist>("POST", "/checklists", {
+      idCard: cardId,
+      name,
+      pos: pos || "bottom",
+    });
+  }
+
+  async addCheckItem(
+    checklistId: string,
+    name: string,
+    pos?: "top" | "bottom"
+  ): Promise<CheckItem> {
+    return this.request<CheckItem>(
+      "POST",
+      `/checklists/${checklistId}/checkItems`,
+      {
+        name,
+        pos: pos || "bottom",
+      }
+    );
+  }
+
   // Attachments
   async getCardAttachments(cardId: string): Promise<Attachment[]> {
     return this.request<Attachment[]>("GET", `/cards/${cardId}/attachments`);

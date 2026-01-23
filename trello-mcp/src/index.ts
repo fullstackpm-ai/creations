@@ -507,6 +507,44 @@ server.tool(
   }
 );
 
+server.tool(
+  "trello_create_checklist",
+  "Create a new checklist on a Trello card",
+  {
+    card_id: z.string().describe("The ID of the card to add the checklist to"),
+    name: z.string().describe("Name of the checklist"),
+    position: z
+      .enum(["top", "bottom"])
+      .optional()
+      .describe("Position of the checklist on the card"),
+  },
+  async ({ card_id, name, position }) => {
+    const checklist = await trello.createChecklist(card_id, name, position);
+    return {
+      content: [{ type: "text", text: JSON.stringify(checklist, null, 2) }],
+    };
+  }
+);
+
+server.tool(
+  "trello_add_check_item",
+  "Add an item to an existing checklist",
+  {
+    checklist_id: z.string().describe("The ID of the checklist"),
+    name: z.string().describe("Name/text of the checklist item"),
+    position: z
+      .enum(["top", "bottom"])
+      .optional()
+      .describe("Position of the item in the checklist"),
+  },
+  async ({ checklist_id, name, position }) => {
+    const item = await trello.addCheckItem(checklist_id, name, position);
+    return {
+      content: [{ type: "text", text: JSON.stringify(item, null, 2) }],
+    };
+  }
+);
+
 // Attachment tools
 server.tool(
   "trello_get_card_attachments",
