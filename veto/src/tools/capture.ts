@@ -140,3 +140,88 @@ export async function updateCaptureStatus(
 
   return data as Capture;
 }
+
+export interface RouteCaptureInput {
+  capture_id: string;
+  action: "complete" | "trello" | "github" | "dismiss" | "skip";
+  routed_to?: string;
+}
+
+export interface RouteCaptureResult {
+  capture: Capture;
+  action: string;
+  message: string;
+}
+
+/**
+ * veto_route_capture: Route a capture to its destination
+ *
+ * Called during /veto:wrap to process each capture. Actions:
+ * - complete: Mark as done (handled immediately)
+ * - trello: Routed to a Trello card (provide card URL in routed_to)
+ * - github: Routed to a GitHub issue (provide issue URL in routed_to)
+ * - dismiss: Discard the capture
+ * - skip: Leave for later (no status change)
+ */
+export async function vetoRouteCapture(
+  input: RouteCaptureInput
+): Promise<RouteCaptureResult> {
+  const { capture_id, action, routed_to } = input;
+
+  // First, fetch the capture to ensure it exists
+  const { data: existingCapture, error: fetchError } = await supabase
+    .from("captures")
+    .select("*")
+    .eq("id", capture_id)
+    .single();
+
+  if (fetchError || !existingCapture) {
+    throw new Error(`Capture not found: ${capture_id}`);
+  }
+
+  let capture: Capture;
+  let message: string;
+
+  switch (action) {
+    case "complete":
+      capture = await updateCaptureStatus(capture_id, "routed", "completed");
+      message = "Marked as complete.";
+      break;
+
+    case "trello":
+      if (!routed_to) {
+        throw new Error("routed_to is required when routing to Trello");
+      }
+      capture = await updateCaptureStatus(capture_id, "routed", routed_to);
+      message = `Routed to Trello: ${routed_to}`;
+      break;
+
+    case "github":
+      if (!routed_to) {
+        throw new Error("routed_to is required when routing to GitHub");
+      }
+      capture = await updateCaptureStatus(capture_id, "routed", routed_to);
+      message = `Routed to GitHub: ${routed_to}`;
+      break;
+
+    case "dismiss":
+      capture = await updateCaptureStatus(capture_id, "dismissed");
+      message = "Dismissed.";
+      break;
+
+    case "skip":
+      // No status change - return existing capture
+      capture = existingCapture as Capture;
+      message = "Skipped - will appear in next wrap.";
+      break;
+
+    default:
+      throw new Error(`Unknown action: ${action}`);
+  }
+
+  return {
+    capture,
+    action,
+    message,
+  };
+}

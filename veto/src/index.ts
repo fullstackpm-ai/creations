@@ -18,7 +18,7 @@ import { vetoListSegments } from "./tools/list-segments.js";
 import { vetoWrapDay } from "./tools/wrap-day.js";
 import { vetoQueryPatterns } from "./tools/query-patterns.js";
 import { vetoPlan } from "./tools/plan.js";
-import { vetoCapture } from "./tools/capture.js";
+import { vetoCapture, vetoRouteCapture } from "./tools/capture.js";
 
 // Tool input schemas
 const AssessInputSchema = z.object({
@@ -224,6 +224,17 @@ const CaptureInputSchema = z.object({
     .enum(["now", "today", "later"])
     .optional()
     .describe("How urgent is this? 'now' = do immediately, 'today' = same day, 'later' = can wait. Defaults to 'later'."),
+});
+
+const RouteCaptureInputSchema = z.object({
+  capture_id: z.string().describe("ID of the capture to route"),
+  action: z
+    .enum(["complete", "trello", "github", "dismiss", "skip"])
+    .describe("What to do with the capture: complete (mark done), trello (create card), github (create issue), dismiss (discard), skip (leave for later)"),
+  routed_to: z
+    .string()
+    .optional()
+    .describe("URL or identifier of destination (required for trello/github actions)"),
 });
 
 // Create server
@@ -607,6 +618,40 @@ If a segment is active, the capture is automatically linked to it.`,
           required: ["content"],
         },
       },
+      {
+        name: "veto_route_capture",
+        description: `Route a capture to its destination during /veto:wrap.
+
+Actions:
+- complete: Mark as done (handled immediately, no external routing)
+- trello: Route to a Trello card (requires routed_to with card URL)
+- github: Route to a GitHub issue (requires routed_to with issue URL)
+- dismiss: Discard the capture entirely
+- skip: Leave for later (will appear in next wrap)
+
+This tool is called by the wrap workflow for each capture to interactively process the day's captured ideas and actions.`,
+        inputSchema: {
+          type: "object",
+          properties: {
+            capture_id: {
+              type: "string",
+              description: "ID of the capture to route",
+            },
+            action: {
+              type: "string",
+              enum: ["complete", "trello", "github", "dismiss", "skip"],
+              description:
+                "What to do: complete, trello, github, dismiss, or skip",
+            },
+            routed_to: {
+              type: "string",
+              description:
+                "URL or identifier of destination (required for trello/github)",
+            },
+          },
+          required: ["capture_id", "action"],
+        },
+      },
     ],
   };
 });
@@ -742,6 +787,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: "text",
               text: formatCapture(result),
+            },
+          ],
+        };
+      }
+
+      case "veto_route_capture": {
+        const input = RouteCaptureInputSchema.parse(args);
+        const result = await vetoRouteCapture(input);
+        return {
+          content: [
+            {
+              type: "text",
+              text: formatRouteCapture(result),
             },
           ],
         };
@@ -1052,6 +1110,29 @@ function formatCapture(
     message,
     "",
     "═══════════════════════════════════════",
+  ];
+
+  return lines.join("\n");
+}
+
+function formatRouteCapture(
+  result: Awaited<ReturnType<typeof vetoRouteCapture>>
+): string {
+  const { capture, action, message } = result;
+
+  const actionIcon =
+    action === "complete"
+      ? "✓"
+      : action === "trello"
+        ? "📋"
+        : action === "github"
+          ? "🐙"
+          : action === "dismiss"
+            ? "🗑️"
+            : "⏭️";
+
+  const lines: string[] = [
+    `${actionIcon} ${message}`,
   ];
 
   return lines.join("\n");

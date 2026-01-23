@@ -52,10 +52,63 @@ Generate a daily summary and close out the day. Call this at the end of your wor
 
    - If no meetings need prep, skip this section entirely (don't show "no meetings")
 
+6. **Route Captures Interactively**: If the wrap_day result contains captures (ideas or actions), iterate through each one and help the user route it:
+
+   For each capture (process actions first by urgency, then ideas):
+
+   a. Display the capture:
+   ```
+   ───────────────────────────────────────
+   📥 CAPTURE 1 of N
+   ───────────────────────────────────────
+
+   [💡 IDEA / ✅ ACTION] [⚡NOW / 📅TODAY / 📥LATER]
+
+   "[capture content]"
+   ```
+
+   b. Use `AskUserQuestion` with options:
+      - **Complete now** - "Mark as done (I handled it or it's no longer relevant)"
+      - **Create Trello card** - "Add to my Trello board for tracking"
+      - **Create GitHub issue** - "Log as a project issue"
+      - **Dismiss** - "Discard this capture"
+      - (User can also type custom response via "Other")
+
+   c. Based on user's choice:
+      - **Complete now**: Call `mcp__veto__veto_route_capture` with `action: "complete"`
+      - **Create Trello card**:
+        1. Call `mcp__trello__trello_get_lists` with board_id `68031b17e0ef40f25b75d2ab`
+        2. Ask user which list to add to (default to first non-Done list)
+        3. Call `mcp__trello__trello_create_card` with the capture content as name
+        4. Call `mcp__veto__veto_route_capture` with `action: "trello"` and `routed_to: card_url`
+      - **Create GitHub issue**:
+        1. Ask user for repo (default: `fullstackpm-ai/creations`)
+        2. Run `gh issue create --repo [repo] --title "[capture content]" --body "Captured during veto wrap on [date]"`
+        3. Call `mcp__veto__veto_route_capture` with `action: "github"` and `routed_to: issue_url`
+      - **Dismiss**: Call `mcp__veto__veto_route_capture` with `action: "dismiss"`
+      - **Other/Skip**: Call `mcp__veto__veto_route_capture` with `action: "skip"`
+
+   d. Show brief confirmation and move to next capture
+
+   After all captures are processed, show summary:
+   ```
+   ═══════════════════════════════════════
+           CAPTURES ROUTED
+   ═══════════════════════════════════════
+
+   ✓ Completed: X
+   📋 To Trello: X
+   🐙 To GitHub: X
+   🗑️ Dismissed: X
+   ⏭️ Skipped: X
+
+   ═══════════════════════════════════════
+   ```
+
 ## Example Interaction
 
 User runs `/veto-wrap`
 
 Ask: "Ready to wrap up the day! Any notable events or observations you'd like to record?"
 
-Then generate the summary and present insights.
+Then generate the summary, show tomorrow's prep, and walk through each capture interactively.
