@@ -6,6 +6,25 @@ import { getTimeInPST, toDateStringPST, parseDateAsPST, PST_TIMEZONE } from "./u
 // User timezone per CLAUDE.md
 const USER_TIMEZONE = PST_TIMEZONE;
 
+// Self-blocked events that should be treated as available deep work time
+// These are events the user creates to protect time for focused work
+const SELF_BLOCKED_KEYWORDS = [
+  'blocked time',
+  'focus time',
+  'deep work',
+  'hold',
+];
+
+/**
+ * Check if an event is a self-blocked deep work event.
+ * These should be treated as available time, not busy time.
+ */
+function isSelfBlockedEvent(summary: string | null | undefined): boolean {
+  if (!summary) return false;
+  const lowerSummary = summary.toLowerCase();
+  return SELF_BLOCKED_KEYWORDS.some(keyword => lowerSummary.includes(keyword));
+}
+
 export type ResponseStatus = 'needsAction' | 'declined' | 'tentative' | 'accepted';
 
 export interface CalendarEvent {
@@ -245,12 +264,19 @@ export class CalendarClient {
       let events = response.data.items || [];
 
       // Filter out declined events unless explicitly requested
-      if (!includeDeclined) {
-        events = events.filter((event) => {
-          const selfAttendee = event.attendees?.find((a) => a.self === true);
-          return selfAttendee?.responseStatus !== 'declined';
-        });
-      }
+      // Also filter out self-blocked events (they're protected time for deep work)
+      events = events.filter((event) => {
+        const selfAttendee = event.attendees?.find((a) => a.self === true);
+        const isDeclined = selfAttendee?.responseStatus === 'declined';
+        const isSelfBlocked = isSelfBlockedEvent(event.summary);
+
+        // Skip declined events (unless includeDeclined is true)
+        if (!includeDeclined && isDeclined) return false;
+        // Always skip self-blocked events - they represent protected deep work time
+        if (isSelfBlocked) return false;
+
+        return true;
+      });
 
       const freeBlocks: FreeTimeBlock[] = [];
 
