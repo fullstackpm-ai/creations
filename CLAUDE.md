@@ -75,6 +75,41 @@ jq ".[] | select(.due \!= null)"
 
 The `!` character in `!=` triggers bash history expansion when not properly quoted. Single quotes prevent all shell interpretation.
 
+## Claude Code Permissions
+
+Trusted operations are configured in `.claude/settings.local.json`. Once approved, these operations run without prompting.
+
+### Permission Format
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(command:*)",           // Bash command with wildcard
+      "Bash(npm test:*)",          // Specific command prefix
+      "mcp__server__tool",         // MCP tool
+      "Skill(name)",               // Skill
+      "WebFetch(domain:github.com)" // Web fetch for domain
+    ]
+  }
+}
+```
+
+### Currently Trusted Operations
+
+| Category | Examples |
+|----------|----------|
+| **Git** | `git init`, `git add`, `git commit`, `git push`, `git branch` |
+| **GitHub CLI** | `gh issue *`, `gh pr *`, `gh api *`, `gh repo *` |
+| **npm** | `npm install`, `npm run *`, `npm test` |
+| **Veto MCP** | All veto tools (assess, start/end segment, wrap, capture, sql_query) |
+| **Trello MCP** | All trello tools (boards, cards, lists, checklists, labels) |
+| **Calendar MCP** | All gcal tools (list, find_free_time, create, update, delete) |
+
+### Adding New Permissions
+
+When Claude asks for approval, select "Always allow" to add to trusted operations. Or manually edit `.claude/settings.local.json`.
+
 ## Development
 
 Work directly on main. Keep it simple. Add process after value is proven.
