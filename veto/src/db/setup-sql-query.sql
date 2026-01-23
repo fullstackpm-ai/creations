@@ -10,6 +10,7 @@ RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
+SET timezone = 'America/Los_Angeles'
 AS $$
 DECLARE
   result JSONB;
