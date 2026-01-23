@@ -19,6 +19,7 @@ import { vetoWrapDay } from "./tools/wrap-day.js";
 import { vetoQueryPatterns } from "./tools/query-patterns.js";
 import { vetoPlan } from "./tools/plan.js";
 import { vetoCapture, vetoRouteCapture } from "./tools/capture.js";
+import { vetoGetTodayState } from "./tools/get-today-state.js";
 
 // Tool input schemas
 const AssessInputSchema = z.object({
@@ -652,6 +653,19 @@ This tool is called by the wrap workflow for each capture to interactively proce
           required: ["capture_id", "action"],
         },
       },
+      {
+        name: "veto_get_today_state",
+        description: `Get the most recent state assessment from today.
+
+Use this before asking for state input to check if the user already logged their state earlier.
+Returns the state log with energy, focus, mood, sleep, and how long ago it was logged.
+
+If an assessment exists within the last few hours, consider using that data instead of prompting again.`,
+        inputSchema: {
+          type: "object",
+          properties: {},
+        },
+      },
     ],
   };
 });
@@ -800,6 +814,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             {
               type: "text",
               text: formatRouteCapture(result),
+            },
+          ],
+        };
+      }
+
+      case "veto_get_today_state": {
+        const result = await vetoGetTodayState();
+        return {
+          content: [
+            {
+              type: "text",
+              text: formatGetTodayState(result),
             },
           ],
         };
@@ -1133,6 +1159,34 @@ function formatRouteCapture(
 
   const lines: string[] = [
     `${actionIcon} ${message}`,
+  ];
+
+  return lines.join("\n");
+}
+
+function formatGetTodayState(
+  result: Awaited<ReturnType<typeof vetoGetTodayState>>
+): string {
+  const { has_assessment, state_log, hours_ago, message } = result;
+
+  if (!has_assessment || !state_log) {
+    return message;
+  }
+
+  const lines: string[] = [
+    "═══════════════════════════════════════",
+    "       TODAY'S STATE ASSESSMENT         ",
+    "═══════════════════════════════════════",
+    "",
+    message,
+    "",
+    `Energy:     ${state_log.energy}/10`,
+    `Focus:      ${state_log.focus}/10`,
+    `Mood:       ${state_log.mood || "—"}`,
+    `Sleep:      ${state_log.sleep_hours ? `${state_log.sleep_hours}h` : "—"}`,
+    `Phase:      ${state_log.circadian_phase ? formatPhase(state_log.circadian_phase) : "—"}`,
+    "",
+    "═══════════════════════════════════════",
   ];
 
   return lines.join("\n");

@@ -14,6 +14,7 @@ Call these tools simultaneously:
 2. `mcp__veto__veto_query_patterns` with `query_type: "deep_work_outcomes"`, `days_back: 1` - get today's work segments
 3. `mcp__trello__trello_list_boards` - get user's boards (to identify primary board)
 4. `mcp__google-calendar__gcal_find_free_time` with today's date - get available time blocks
+5. `mcp__veto__veto_get_today_state` - check if user already logged state today
 
 ## Step 2: Get Current Time and Tasks
 
@@ -28,16 +29,34 @@ After Step 1 completes:
 
 For each card returned in Step 2 (both due soon AND overdue), call `mcp__trello__trello_get_estimate` with card_id and board_id.
 
-## Step 4: Ask for Current State
+## Step 4: Check or Ask for Current State
+
+**If `veto_get_today_state` returned an existing assessment:**
+
+Check how long ago it was logged (from `hours_ago` field):
+
+- **If < 3 hours ago**: Use the existing state. Present it briefly:
+  "Using your earlier assessment (Energy X/10, Focus X/10). Has anything changed since then?"
+  - If user says no → proceed to Step 6 (skip Step 5)
+  - If user says yes → ask what changed and proceed to Step 5
+
+- **If >= 3 hours ago**: Ask if the earlier state still applies or if they want to log fresh values:
+  "You logged state X hours ago (Energy X, Focus X). Want to use that or update?"
+
+**If no assessment exists today:**
 
 Use `AskUserQuestion` to ask the user:
 - Energy level (1-10)
 - Focus level (1-10)
 - Hours of sleep last night
 
-## Step 5: Log State Assessment
+Then proceed to Step 5.
+
+## Step 5: Log State Assessment (if needed)
 
 Call `mcp__veto__veto_assess` with the user's responses.
+
+**Skip this step** if using an existing assessment from earlier today.
 
 ## Step 6: Calculate and Present Daily Plan
 
