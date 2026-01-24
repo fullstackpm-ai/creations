@@ -1,7 +1,7 @@
 import { supabase } from "../db/client.js";
 import type { DailySummary, Segment, StateLog, EnergyTrend, Capture } from "../types.js";
 import { getTodayDatePST } from "../utils/date.js";
-import { getTodayCaptures } from "./capture.js";
+import { getPendingCaptures } from "./capture.js";
 
 export interface WrapDayInput {
   notable_events?: string;
@@ -256,10 +256,10 @@ export async function vetoWrapDay(input: WrapDayInput): Promise<WrapDayResult> {
     );
   }
 
-  // Fetch today's captures
+  // Fetch all pending captures (includes previous days)
   let captures = { ideas: [] as Capture[], actions: [] as Capture[] };
   try {
-    captures = await getTodayCaptures();
+    captures = await getPendingCaptures();
   } catch {
     // Captures table may not exist yet, ignore
   }

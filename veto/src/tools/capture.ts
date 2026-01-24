@@ -89,19 +89,18 @@ export async function vetoCapture(input: CaptureInput): Promise<CaptureResult> {
 }
 
 /**
- * Get all pending captures for today
+ * Get all pending captures (regardless of date)
+ * Captures roll over until processed - older captures appear first
  */
-export async function getTodayCaptures(): Promise<{
+export async function getPendingCaptures(): Promise<{
   ideas: Capture[];
   actions: Capture[];
 }> {
-  const today = getTodayDatePST();
-
   const { data, error } = await supabase
     .from("captures")
     .select("*")
-    .eq("date", today)
     .eq("status", "pending")
+    .order("date", { ascending: true })
     .order("created_at", { ascending: true });
 
   if (error) {
