@@ -56,25 +56,19 @@ Generate a daily summary and close out the day. Call this at the end of your wor
 
    For each capture (process actions first by urgency, then ideas):
 
-   a. Display the capture:
-   ```
-   ───────────────────────────────────────
-   📥 CAPTURE 1 of N
-   ───────────────────────────────────────
-
-   [💡 IDEA / ✅ ACTION] [⚡NOW / 📅TODAY / 📥LATER]
-
-   "[capture content]"
-   ```
-
-   b. Use `AskUserQuestion` with options:
+   Use `AskUserQuestion` with the capture content **embedded in the question field** so it's visible in the dialog:
+   - **question**: `"[1/N] [💡 IDEA / ✅ ACTION] [⚡NOW / 📅TODAY / 📥LATER]: \"[capture content]\" — What would you like to do with this?"`
+   - **header**: `"Capture"`
+   - **options**:
       - **Complete now** - "Mark as done (I handled it or it's no longer relevant)"
       - **Create Trello card** - "Add to my Trello board for tracking"
       - **Create GitHub issue** - "Log as a project issue"
       - **Dismiss** - "Discard this capture"
       - (User can also type custom response via "Other")
 
-   c. Based on user's choice:
+   **IMPORTANT**: The capture content MUST be in the question field itself, not displayed separately before the question. This ensures the user can see what they're routing.
+
+   Based on user's choice:
       - **Complete now**: Call `mcp__veto__veto_route_capture` with `action: "complete"`
       - **Create Trello card**:
         1. Call `mcp__trello__trello_get_lists` with board_id `68031b17e0ef40f25b75d2ab`
@@ -88,7 +82,7 @@ Generate a daily summary and close out the day. Call this at the end of your wor
       - **Dismiss**: Call `mcp__veto__veto_route_capture` with `action: "dismiss"`
       - **Other/Skip**: Call `mcp__veto__veto_route_capture` with `action: "skip"`
 
-   d. Show brief confirmation and move to next capture
+   Show brief confirmation and move to next capture.
 
    After all captures are processed, show summary:
    ```
