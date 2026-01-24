@@ -150,7 +150,45 @@ Present a formatted summary:
 
 ## Step 7: Offer to Start Segment
 
-Ask if the user wants to start tracking a work segment on any of the recommended tasks.
+Use a structured flow to offer starting a work segment (same experience as `/veto:start`):
+
+### 7a. Ask Work Type
+
+Use `AskUserQuestion` to ask:
+- **question**: "Would you like to start a work segment?"
+- **header**: "Start"
+- **options**:
+  - **Deep work** - "Cognitively demanding, requires sustained focus"
+  - **Shallow work** - "Administrative, routine tasks"
+  - **Not now** - "Skip starting a segment"
+
+If user selects "Not now", end the workflow.
+
+### 7b. Present Task Options
+
+Use `AskUserQuestion` to present the tasks fetched in Steps 2-3 as selectable options:
+- **question**: "What will you work on?"
+- **header**: "Task"
+- **options**: Build from the due/overdue cards (max 4 options):
+  - Format each as: `"[Card name]"` with description `"Due: [date] | Est: [X]h"` or `"OVERDUE | Est: [X]h"`
+  - Prioritize: overdue first, then by due date
+  - Include estimates fetched in Step 3
+  - User can always select "Other" for a custom task
+
+### 7c. Start Segment and Move Card
+
+1. Call `mcp__veto__veto_start_segment` with:
+   - `intended_type`: "deep" or "shallow" based on 7a
+   - `description`: The selected task name
+   - `trello_card_id`: The card ID (if a Trello task was selected)
+
+2. **If a Trello card was selected**, automatically move it to "In Progress":
+   - Get the board's lists using `mcp__trello__trello_get_lists`
+   - Find the list named "In Progress" or "Doing" (case-insensitive)
+   - Move the card using `mcp__trello__trello_move_card`
+   - If no "In Progress" list found, skip and inform user
+
+3. Confirm: "Started [deep/shallow] segment: [task]. Call `/veto:end` when done."
 
 ## Notes
 
