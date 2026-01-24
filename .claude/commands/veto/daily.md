@@ -148,6 +148,24 @@ Present a formatted summary:
 ═══════════════════════════════════════════════════════════════
 ```
 
+### Delegations Check (add to output if overdue exist)
+
+Call `mcp__trello__trello_get_overdue_cards` with board_id `696ee27d5be8fa4ad4d18486` (Delegated board).
+
+If there are overdue delegations, append to the daily plan:
+
+```
+───────────────────────────────────────────────────────────────
+
+📤 DELEGATIONS
+   ⚠️ X overdue items need follow-up
+   Run /veto:delegations for details
+
+───────────────────────────────────────────────────────────────
+```
+
+If no overdue delegations, skip this section entirely.
+
 ## Step 7: Offer to Start Segment
 
 Use a structured flow to offer starting a work segment (same experience as `/veto:start`):
