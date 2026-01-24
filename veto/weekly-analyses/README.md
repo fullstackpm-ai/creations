@@ -55,18 +55,44 @@ The skill:
 
 **The human + Claude conversation produces the insights.** The value comes from contextual reasoning, not automation.
 
-## Deep Analysis Resource
+## Deep Analysis Resources
 
-After surface-level analysis, cross-reference findings with:
+After surface-level analysis, cross-reference findings with two knowledge bases:
 
-**`veto/knowledge/BehaviorInsights.md`** - Human Behavior Engine patterns
+### 1. Personal Cognitive Profile
 
-This file contains 45+ behavioral patterns (ego preservation, identity-first processing, narrative-anchored cognition, etc.) that reveal *why* the data looks the way it does. Map weekly findings against these patterns to surface hidden truths that raw metrics can't show.
+**`veto/knowledge/CognitiveProfile.md`** - Your cognitive patterns
 
-Example insights from cross-referencing:
-- Pattern 27 (Divergent Optimization Functions) revealed identity fragmentation across leader/builder/operator roles
-- Pattern 45 (Single-Modality Illusion) explained capture behavior as thinking-by-externalizing
-- Pattern 40 (Self-Persuasion Dependency) showed why known insights weren't being followed
+This file describes *how you specifically think* - your mental models, tendencies, and cognitive architecture. Use these as a lens for interpreting weekly data:
+
+| Pattern | Description |
+|---------|-------------|
+| Systems Thinking | Default mode is architect - you solve problem classes, not instances |
+| Friction Intolerance | Visceral reaction to repetitive friction |
+| Meta-Cognitive Awareness | You watch yourself think and flag reactions for analysis |
+| Leadership Burden | People management runs as a background process |
+| Visibility Anxiety | Lack of visibility = loss of control = anxiety |
+| Self-First Accountability | Default attribution is self-blame |
+| External Validation Seeking | Seeking confirmation for experiential insights |
+| Architect vs Operator | Natural mode (designing) vs role requirement (operating) |
+
+### 2. Human Behavior Engine
+
+**`veto/knowledge/BehaviorInsights.md`** - General behavioral patterns
+
+45+ patterns that reveal *why humans behave the way they do*:
+- Pattern 27 (Divergent Optimization Functions) - identity fragmentation
+- Pattern 40 (Self-Persuasion Dependency) - why known insights aren't followed
+- Pattern 45 (Single-Modality Illusion) - thinking-by-externalizing
+- And 42 more...
+
+### Updating Cognitive Profile
+
+If weekly analysis reveals a new pattern not in CognitiveProfile.md, add it with:
+- Pattern name and description
+- Evidence from captures/segments
+- Implications for behavior
+- Cross-references to BehaviorInsights.md if applicable
 
 ## Learning Loop
 

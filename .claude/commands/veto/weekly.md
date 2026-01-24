@@ -128,18 +128,24 @@ After presenting the data, prompt the user:
 
 The raw data is above. Let's analyze patterns together.
 
-**Surface-level analysis I can do:**
+**Surface-level analysis:**
 1. Sleep + focus correlations (threshold effects, weekday vs weekend)
 2. Work type distribution (categorize segments)
 3. Completion rate patterns (what made good days good?)
 4. Capture theme analysis (what's generating cognitive load?)
 
-**Deep analysis (cross-reference with BehaviorInsights.md):**
-After surface analysis, I can map findings against the Human Behavior
-Engine patterns to surface hidden truths about *why* the data looks
-this way.
+**Deep analysis (using your cognitive profile + behavior patterns):**
+I'll cross-reference findings with:
+• Your Cognitive Profile - known patterns like systems-thinking,
+  friction intolerance, visibility anxiety, architect-vs-operator tension
+• Human Behavior Engine - 45+ patterns on why humans behave as they do
 
-What would you like to explore first?
+**Capture-specific analysis:**
+If you want to understand *why you think the way you think*, I can
+analyze capture content for cognitive patterns, mental models, and
+underlying beliefs.
+
+What would you like to explore?
 ═══════════════════════════════════════════════════════════════
 ```
 
@@ -176,8 +182,25 @@ Based on user's response, conduct analysis:
 
 ### Deep Analysis
 
-After surface analysis, read `veto/knowledge/BehaviorInsights.md` and cross-reference findings with behavioral patterns:
+After surface analysis, cross-reference findings with two knowledge bases:
 
+**1. Personal Cognitive Profile (`veto/knowledge/CognitiveProfile.md`)**
+
+Your known cognitive patterns - use these as a lens for interpreting the week's data:
+- Pattern 1: Systems Thinking as Default Mode
+- Pattern 2: Friction Intolerance
+- Pattern 3: Strong Meta-Cognitive Awareness
+- Pattern 4: Leadership Burden as Background Process
+- Pattern 5: Visibility Anxiety
+- Pattern 6: Self-First Accountability
+- Pattern 7: External Validation Seeking
+- Meta-Pattern: Architect Trapped in Operator Role
+
+Ask: "How did my cognitive patterns show up this week? Did I fall into known traps?"
+
+**2. Human Behavior Engine (`veto/knowledge/BehaviorInsights.md`)**
+
+General behavioral patterns (45+) that reveal *why* humans behave the way they do:
 - Pattern 3: Ego Preservation Loop
 - Pattern 19: The Consistency Trap
 - Pattern 27: Divergent Optimization Functions
@@ -185,7 +208,11 @@ After surface analysis, read `veto/knowledge/BehaviorInsights.md` and cross-refe
 - Pattern 45: Single-Modality Illusion
 - And others as relevant...
 
-Surface hidden truths that raw metrics can't show.
+Ask: "What hidden truths does the data reveal when viewed through these lenses?"
+
+**3. Check for New Cognitive Patterns**
+
+If the week's data reveals a new pattern not in CognitiveProfile.md, flag it for addition.
 
 ## Step 6: Generate Recommendations
 
@@ -194,6 +221,58 @@ Based on analysis, generate:
 1. **One primary recommendation** - the single highest-leverage change
 2. **2-3 supporting recommendations** - additional improvements
 3. **Questions for next week** - what to track/verify
+
+## Step 6b: Deeper Reflection Check
+
+Weekly analysis surfaces operational patterns. But some insights point to deeper questions about role, identity, and life architecture.
+
+### Check for Existential Themes
+
+Review the week's captures and insights for themes that go beyond "how do I work better":
+
+- **Role fit questions** - Am I in the right seat? Should I be doing this job?
+- **Identity tensions** - Conflict between who I am and what the role requires
+- **Energy patterns** - Consistent drain from certain work categories
+- **Resentment signals** - "I shouldn't have to do this" feelings
+- **Fantasy patterns** - Recurring daydreams about different work/life
+
+### If Existential Themes Emerge
+
+1. **Check `veto/knowledge/RoleReflection.md`** for existing reflection work
+2. **Surface the theme** to the user: "This week's data suggests a deeper question about [X]. Want to explore this?"
+3. **If yes**, either:
+   - Continue in this session (if time/energy permits)
+   - Create a Trello card for dedicated reflection work
+   - Schedule for next week's session
+
+### Quarterly Deep Reflection (Every 12-13 weeks)
+
+At the start of each quarter, prompt for deeper reflection:
+
+```
+═══════════════════════════════════════════════════════════════
+                 QUARTERLY REFLECTION CHECK
+═══════════════════════════════════════════════════════════════
+
+It's been ~12 weeks since last deep reflection.
+
+Beyond operational patterns, let's check:
+1. Role fit - Is COO still the right seat?
+2. Energy trajectory - Am I more or less energized than 12 weeks ago?
+3. RoleReflection.md status - Any open questions to revisit?
+4. Life architecture - Is work structured the way I want?
+
+Want to do a deeper reflection session, or stay operational today?
+═══════════════════════════════════════════════════════════════
+```
+
+### Role Reflection Integration
+
+If `veto/knowledge/RoleReflection.md` has open exercises or unanswered questions:
+
+1. Surface them: "Your Role Reflection has open questions from [date]. Want to revisit?"
+2. If the reflection is complete, ask: "Has anything changed since you completed your Role Reflection?"
+3. Track whether the decision/insight is being lived out in weekly data
 
 ## Step 7: Save Analysis
 
@@ -218,7 +297,13 @@ Confirm: "Analysis saved to `veto/weekly-analyses/[YYYY-WNN].md`"
 ## Notes
 
 - The value comes from conversation, not automation
-- Always cross-reference with BehaviorInsights.md for deeper insights
+- Cross-reference with three knowledge bases:
+  - `veto/knowledge/CognitiveProfile.md` - Your personal cognitive patterns
+  - `veto/knowledge/BehaviorInsights.md` - General human behavior patterns
+  - `veto/knowledge/RoleReflection.md` - Deeper questions about role fit and career architecture
 - Previous week's questions should drive follow-up analysis
 - Captures are outputs (pressure release), not inputs - high volume = contained intrusions
-- Weekly analyses are stored as markdown, not in database
+- Weekly analyses are stored as markdown in `veto/weekly-analyses/`
+- If new cognitive patterns emerge, update CognitiveProfile.md
+- If existential themes emerge, check RoleReflection.md or create dedicated reflection time
+- Quarterly (every 12-13 weeks): prompt for deeper life/role reflection beyond operational patterns
