@@ -39,13 +39,23 @@ Call these tools simultaneously:
 After Step 1 completes:
 
 1. Run `date` to get current time
-2. Call these in parallel:
-   - `mcp__trello__trello_get_cards_due_soon` with the primary board_id, `days: 3`, `include_completed: false`
-   - `mcp__trello__trello_get_overdue_cards` with the primary board_id, `include_completed: false`
+2. Fetch tasks from ALL THREE boards in parallel:
+
+   **Thinking board** (`68031b17e0ef40f25b75d2ab`):
+   - `mcp__trello__trello_get_cards_due_soon` with `days: 3`, `include_completed: false`
+   - `mcp__trello__trello_get_overdue_cards` with `include_completed: false`
+
+   **Delegated board** (`696ee27d5be8fa4ad4d18486`):
+   - `mcp__trello__trello_get_cards_due_soon` with `days: 7`, `include_completed: false`
+   - `mcp__trello__trello_get_overdue_cards` with `include_completed: false`
+
+   **Chores board** (`696ee291d80f2f2d8055094e`):
+   - `mcp__trello__trello_get_cards_due_soon` with `days: 3`, `include_completed: false`
+   - `mcp__trello__trello_get_overdue_cards` with `include_completed: false`
 
 ## Step 3: Get Task Estimates
 
-For each card returned in Step 2 (both due soon AND overdue), call `mcp__trello__trello_get_estimate` with card_id and board_id.
+For each card returned in Step 2 from the **Thinking board only**, call `mcp__trello__trello_get_estimate` with card_id and board_id. (Delegations and chores typically don't need estimates.)
 
 ## Step 4: Check or Ask for Current State
 
@@ -132,12 +142,28 @@ Present a formatted summary:
 
 ───────────────────────────────────────────────────────────────
 
-📋 TASKS DUE
+📋 TASKS (Thinking Board)
 
    [OVERDUE section - show first with ⚠️ warning if any exist]
    [TODAY section if applicable]
    [TOMORROW section if applicable]
    [Later section if applicable]
+
+───────────────────────────────────────────────────────────────
+
+📤 DELEGATIONS (Follow-ups)
+
+   [Show overdue delegations with ⚠️ if any]
+   [Show upcoming due dates for delegated items]
+   (Skip this section if no delegations due within 7 days)
+
+───────────────────────────────────────────────────────────────
+
+🏠 CHORES
+
+   [Show overdue chores with ⚠️ if any]
+   [Show chores due within 3 days]
+   (Skip this section if no chores due)
 
 ───────────────────────────────────────────────────────────────
 
@@ -148,23 +174,6 @@ Present a formatted summary:
 ═══════════════════════════════════════════════════════════════
 ```
 
-### Delegations Check (add to output if overdue exist)
-
-Call `mcp__trello__trello_get_overdue_cards` with board_id `696ee27d5be8fa4ad4d18486` (Delegated board).
-
-If there are overdue delegations, append to the daily plan:
-
-```
-───────────────────────────────────────────────────────────────
-
-📤 DELEGATIONS
-   ⚠️ X overdue items need follow-up
-   Run /veto:delegations for details
-
-───────────────────────────────────────────────────────────────
-```
-
-If no overdue delegations, skip this section entirely.
 
 ## Step 7: Offer to Start Segment
 
@@ -210,6 +219,11 @@ Use `AskUserQuestion` to present the tasks fetched in Steps 2-3 as selectable op
 
 ## Notes
 
-- Primary Trello board: If multiple boards exist, use "My Trello board" (68031b17e0ef40f25b75d2ab) as default
-- Always fetch Estimate field for task planning
+- **Board IDs**:
+  - Thinking (primary): `68031b17e0ef40f25b75d2ab`
+  - Delegated: `696ee27d5be8fa4ad4d18486`
+  - Chores: `696ee291d80f2f2d8055094e`
+- Always fetch Estimate field for Thinking board tasks
 - Order tasks by Leverage field if available, then by due date
+- Delegations look ahead 7 days (longer horizon for follow-ups)
+- Chores and Thinking look ahead 3 days
