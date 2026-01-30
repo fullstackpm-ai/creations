@@ -14,6 +14,8 @@ meetings/
 ├── team/                    # Team syncs, standups
 │   ├── weekly-product-meeting/   # Recurring: Weekly product team sync
 │   ├── ai-project-sync/          # Recurring: AI/LLM project sync
+│   ├── product-prioritization/   # Recurring: Weekly Jira queue review
+│   ├── jon-randy-akshay-sync/    # Recurring: Leadership sync
 │   └── ad-hoc/                   # One-off team meetings
 ├── interviews/              # Job interviews
 ├── external/                # Client, partner, vendor meetings
