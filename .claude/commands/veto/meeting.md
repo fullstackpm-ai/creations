@@ -108,6 +108,7 @@ Determine the file path based on meeting type:
 - `ai-project-sync` - AI/LLM project sync
 - `product-prioritization` - Weekly Jira queue review
 - `jon-randy-akshay-sync` - Leadership sync
+- `walk-the-store` - Weekly Friday demo (engineering shows features to leadership)
 
 For team meetings, determine if it's a recurring meeting (use existing folder) or one-off (use ad-hoc).
 
