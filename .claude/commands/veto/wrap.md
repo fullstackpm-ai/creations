@@ -23,32 +23,59 @@ Generate a daily summary and close out the day. Call this at the end of your wor
 
 4. If there were overrides, ask the user to reflect on whether they regret the override decision (this feeds the learning system).
 
-5. **Tomorrow's Prep Check**: Fetch tomorrow's calendar and surface meetings that may need prep:
+5. **Tomorrow's Prep Check**: Fetch tomorrow's calendar and surface meetings that need prep work:
    - Call `mcp__google-calendar__gcal_list_events` with `range: "tomorrow"`
-   - Filter for meetings that likely need prep:
-     - **Include**: Meetings with keywords: `1:1`, `interview`, `review`, `planning`, `sync`, `strategy`, `kickoff`
-     - **Include**: Meetings with external attendees or unfamiliar names
-     - **Include**: Meetings over 30 minutes
-     - **Exclude**: Self-blocked time (`Blocked`, `Focus`, `Hold`, `Deep Work`)
-     - **Exclude**: All-day reminder events
-     - **Exclude**: Recurring standups or quick syncs under 30 min
-   - Display a simple reminder block:
+   - Categorize meetings into two tiers:
+
+   **HIGH-STAKES** (prep is real deep work, not buffer time):
+     - `interview` (any direction - conducting or being interviewed)
+     - `review` (performance, design, architecture)
+     - `strategy`, `planning`, `kickoff`
+     - `board`, `exec`, `leadership`
+     - Meetings with external stakeholders, clients, or partners
+     - First-time 1:1s with new people
+
+   **STANDARD PREP** (lighter prep needed):
+     - Recurring 1:1s (skim notes, update agenda)
+     - `sync` meetings over 30 minutes
+     - Meetings you're presenting in
+
+   **EXCLUDE** (no prep needed):
+     - Self-blocked time (`Blocked`, `Focus`, `Hold`, `Deep Work`)
+     - All-day reminder events
+     - Recurring standups under 30 min
+     - Meetings you're just attending (no active role)
+
+   - Display the prep check with high-stakes meetings emphasized:
 
    ```
    ═══════════════════════════════════════
            TOMORROW'S PREP CHECK
    ═══════════════════════════════════════
 
-   These meetings may need prep:
-
-   • [time] - [meeting title]
+   ⚠️  HIGH-STAKES (block prep time):
    • [time] - [meeting title]
 
-   Consider prepping tonight or protecting
-   morning time tomorrow.
+   📋 Standard prep:
+   • [time] - [meeting title]
 
    ═══════════════════════════════════════
    ```
+
+   - If there are HIGH-STAKES meetings, use `AskUserQuestion`:
+     - **question**: `"Want me to block prep time on your calendar for these high-stakes meetings?"`
+     - **header**: `"Prep time"`
+     - **options**:
+       - **Yes, block time** - "Create 30-60 min prep blocks tomorrow morning"
+       - **No thanks** - "I'll handle prep myself"
+
+   - If user chooses to block time:
+     1. Call `mcp__google-calendar__gcal_find_free_time` for tomorrow with `start_hour: 8`, `end_hour: 12`, `duration_minutes: 30`
+     2. For each high-stakes meeting, create a prep block before the earliest available slot using `mcp__google-calendar__gcal_create_event`:
+        - Title: `"Prep: [meeting name]"`
+        - Duration: 30-60 min depending on meeting type (interviews/reviews get 60 min)
+        - Description: `"Deep work block for meeting prep. Treat as focus time."`
+     3. Confirm what was created
 
    - If no meetings need prep, skip this section entirely (don't show "no meetings")
 
