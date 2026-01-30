@@ -9,9 +9,12 @@ Begin tracking a focused work block. Only one segment can be active at a time.
 ## Steps
 
 1. Ask the user for segment details:
-   - **Type** (required): "deep" or "shallow" work
-   - **Description** (optional): Brief description of what they're working on
+   - **Type** (required): "deep" or "structured" (stored as "shallow" internally)
+   - **Description** (required for structured): What specific task they're working on
    - **Trello Card** (optional): If working on a Trello task, get the card ID
+
+   **For structured tasks**: Require a specific task description. Remind user:
+   > "Pick ONE task. Structured ≠ unfocused. Avoid Slack/email drift."
 
 2. Call the `mcp__veto__veto_start_segment` tool with:
    - `intended_type`: The work type
@@ -32,14 +35,17 @@ Begin tracking a focused work block. Only one segment can be active at a time.
 User runs `/veto:start`
 
 Ask: "What type of work are you starting?
-- **deep**: Cognitively demanding, requires sustained focus
-- **shallow**: Administrative, routine tasks
+- **Deep work**: Cognitively demanding, requires sustained focus
+- **Structured tasks**: Admin block (email, prep, follow-ups)
 
-Optional: What will you be working on?
+What will you be working on? [Required for structured tasks]
 
-Optional: Are you working on a Trello card? If so, provide the card ID and I'll move it to In Progress."
+Are you working on a Trello card? If so, provide the card ID and I'll move it to In Progress."
 
-Then start the segment and move the Trello card if provided.
+**If structured tasks selected**, remind:
+> "Pick ONE task. Structured ≠ unfocused. Avoid Slack/email drift."
+
+Then start the segment (use `shallow` as the type internally) and move the Trello card if provided.
 
 ## Trello Integration
 

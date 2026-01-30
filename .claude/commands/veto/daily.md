@@ -119,7 +119,19 @@ Present a formatted summary:
    Energy: X/10 | Focus: X/10 | Sleep: Xh
    Phase: [Morning Peak/Midday/Afternoon Dip/Evening]
 
-   → Recommendation: [DEEP WORK / SHALLOW WORK]
+   → Recommendation: [DEEP WORK / STRUCTURED TASKS]
+
+   [If STRUCTURED TASKS, add this block:]
+   ┌─────────────────────────────────────
+   │ Good time for:
+   │ • Email triage (batch, don't browse)
+   │ • Meeting prep
+   │ • Delegation follow-ups
+   │ • Process documentation
+   │
+   │ ⚠️ Structured ≠ unfocused
+   │ Pick ONE task. Avoid reactive browsing.
+   └─────────────────────────────────────
 
 ───────────────────────────────────────────────────────────────
 
@@ -186,7 +198,7 @@ Use `AskUserQuestion` to ask:
 - **header**: "Start"
 - **options**:
   - **Deep work** - "Cognitively demanding, requires sustained focus"
-  - **Shallow work** - "Administrative, routine tasks"
+  - **Structured tasks** - "Admin block: email, prep, follow-ups (pick ONE)"
   - **Not now** - "Skip starting a segment"
 
 If user selects "Not now", end the workflow.
