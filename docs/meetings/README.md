@@ -6,14 +6,18 @@ Work meeting documentation for Veto integration.
 
 ```
 meetings/
-├── 1-1s/           # One-on-one meetings by person
+├── 1-1s/                    # One-on-one meetings by person
 │   ├── tim/
 │   │   └── 2026-01-29.md
 │   └── aary/
-├── team/           # Team syncs, standups
-├── interviews/     # Job interviews
-├── external/       # Client, partner, vendor meetings
-└── .raw/           # Raw transcripts (not committed)
+│       └── 2026-01-29.md
+├── team/                    # Team syncs, standups
+│   ├── weekly-product-meeting/   # Recurring: Weekly product team sync
+│   ├── ai-project-sync/          # Recurring: AI/LLM project sync
+│   └── ad-hoc/                   # One-off team meetings
+├── interviews/              # Job interviews
+├── external/                # Client, partner, vendor meetings
+└── .raw/                    # Raw transcripts (not committed)
 ```
 
 ## Usage

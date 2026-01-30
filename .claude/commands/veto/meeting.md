@@ -98,9 +98,16 @@ Determine the file path based on meeting type:
 | Type | Path |
 |------|------|
 | 1:1 | `docs/meetings/1-1s/[name-lowercase]/YYYY-MM-DD.md` |
-| Team | `docs/meetings/team/YYYY-MM-DD-[topic-slug].md` |
+| Team (recurring) | `docs/meetings/team/[meeting-slug]/YYYY-MM-DD.md` |
+| Team (one-off) | `docs/meetings/team/ad-hoc/YYYY-MM-DD-[topic-slug].md` |
 | Interview | `docs/meetings/interviews/YYYY-MM-DD-[candidate-or-role].md` |
 | External | `docs/meetings/external/YYYY-MM-DD-[company-or-topic].md` |
+
+**Known recurring team meetings:**
+- `weekly-product-meeting` - Weekly product team sync
+- `ai-project-sync` - AI/LLM project sync
+
+For team meetings, determine if it's a recurring meeting (use existing folder) or one-off (use ad-hoc).
 
 Create parent directories if they don't exist using Bash `mkdir -p`.
 
