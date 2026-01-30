@@ -57,6 +57,20 @@ After Step 1 completes:
 
 For each card returned in Step 2 from the **Thinking board only**, call `mcp__trello__trello_get_estimate` with card_id and board_id. (Delegations and chores typically don't need estimates.)
 
+## Step 3b: Look Up Meeting Notes (for 1:1s)
+
+For each 1:1 meeting on today's calendar:
+
+1. Extract the person's name from the meeting title
+2. Check if notes exist: `docs/meetings/1-1s/[name-lowercase]/`
+3. If folder exists, use Glob to find the most recent note: `docs/meetings/1-1s/[name]/*.md`
+4. Read the most recent note to surface:
+   - Incomplete action items (`- [ ]`)
+   - Follow-up topics
+   - Last meeting date
+
+This provides context for meeting prep without requiring manual lookup.
+
 ## Step 4: Check or Ask for Current State
 
 **If `veto_get_today_state` returned an existing assessment:**
@@ -151,6 +165,20 @@ Present a formatted summary:
    Legend: ▓▓▓ = meetings  ░░░ = deep work blocks (self-blocked)
 
    → Available: X hrs (includes self-blocked deep work time)
+
+───────────────────────────────────────────────────────────────
+
+📝 MEETING PREP (if 1:1s or key meetings today)
+
+   [For each 1:1 or important meeting on today's calendar:]
+
+   • [time] - [person/meeting name]
+     Last meeting: [date] | Notes: docs/meetings/1-1s/[name]/[date].md
+     Open action items from last time:
+     - [ ] @me: [pending item]
+     - [ ] @them: [pending item]
+
+   (Skip this section if no meetings have prior notes)
 
 ───────────────────────────────────────────────────────────────
 

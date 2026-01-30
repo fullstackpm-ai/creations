@@ -7,3 +7,7 @@
 
 # OS files
 .DS_Store
+
+# Raw meeting transcripts (privacy)
+docs/meetings/.raw/*
+!docs/meetings/.raw/.gitkeep
