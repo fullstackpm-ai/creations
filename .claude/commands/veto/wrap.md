@@ -56,17 +56,27 @@ Generate a daily summary and close out the day. Call this at the end of your wor
 
    For each capture (process actions first by urgency, then ideas):
 
-   Use `AskUserQuestion` with the capture content **embedded in the question field** so it's visible in the dialog:
-   - **question**: `"[1/N] [💡 IDEA / ✅ ACTION] [⚡NOW / 📅TODAY / 📥LATER]: \"[capture content]\" — What would you like to do with this?"`
-   - **header**: `"Capture"`
+   **Step A**: Display the capture content as regular text output BEFORE the option picker:
+   ```
+   ───────────────────────────────────────
+   CAPTURE [1/N] — [💡 IDEA / ✅ ACTION] [⚡NOW / 📅TODAY / 📥LATER]
+   ───────────────────────────────────────
+
+   "[Full capture content here]"
+
+   ```
+
+   **Step B**: Then use `AskUserQuestion` with a short question:
+   - **question**: `"What would you like to do with this capture?"`
+   - **header**: `"Route"`
    - **options**:
-      - **Complete now** - "Mark as done (I handled it or it's no longer relevant)"
-      - **Create Trello card** - "Add to my Trello board for tracking"
-      - **Create GitHub issue** - "Log as a project issue"
+      - **Complete** - "Mark as done (handled or no longer relevant)"
+      - **Trello** - "Create a card on my Trello board"
+      - **GitHub** - "Create a GitHub issue"
       - **Dismiss** - "Discard this capture"
       - (User can also type custom response via "Other")
 
-   **IMPORTANT**: The capture content MUST be in the question field itself, not displayed separately before the question. This ensures the user can see what they're routing.
+   **IMPORTANT**: The capture content MUST be displayed as text output BEFORE calling AskUserQuestion. This ensures the user can see the full capture text, as the option picker UI can obscure long question text.
 
    Based on user's choice:
       - **Complete now**: Call `mcp__veto__veto_route_capture` with `action: "complete"`
