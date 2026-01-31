@@ -23,8 +23,61 @@ Generate a daily summary and close out the day. Call this at the end of your wor
 
 4. If there were overrides, ask the user to reflect on whether they regret the override decision (this feeds the learning system).
 
-5. **Tomorrow's Prep Check**: Fetch tomorrow's calendar and surface meetings that need prep work:
+5. **Next Workday Detection**: Determine what "tomorrow" means for planning purposes:
+
+   First, run `date +%A` to get the current day of week.
+
+   **Day-type logic:**
+
+   | Today     | Next Workday | Action                                      |
+   |-----------|--------------|---------------------------------------------|
+   | Monday-Thursday | Tomorrow | Normal prep check for tomorrow              |
+   | Friday    | Monday       | Prep check for Monday, weekend sign-off     |
+   | Saturday  | Monday       | Skip prep, weekend message                  |
+   | Sunday    | Monday       | Skip prep, weekend message                  |
+
+   **Holiday detection:**
    - Call `mcp__google-calendar__gcal_list_events` with `range: "tomorrow"`
+   - Check for all-day events with titles containing: `holiday`, `PTO`, `off`, `vacation`, `closed`
+   - If found, treat tomorrow as non-workday and look ahead to next workday
+
+   **Weekend/Holiday handling:**
+
+   If wrapping on **Friday**:
+   ```
+   ═══════════════════════════════════════
+            WEEKEND AHEAD 🎉
+   ═══════════════════════════════════════
+
+   Enjoy your weekend! Here's what's coming up Monday:
+   ```
+   Then show Monday's prep check (call `gcal_list_events` with `range: "custom"`, `start_date` and `end_date` set to Monday).
+
+   If wrapping on **Saturday or Sunday**:
+   ```
+   ═══════════════════════════════════════
+            ENJOY YOUR WEEKEND 🌴
+   ═══════════════════════════════════════
+
+   No work planning for the weekend.
+   Monday's prep will show in Sunday evening's wrap.
+   ```
+   Skip the prep check entirely.
+
+   If tomorrow is a **holiday**:
+   ```
+   ═══════════════════════════════════════
+            [HOLIDAY NAME] TOMORROW 🎊
+   ═══════════════════════════════════════
+
+   Enjoy your day off! Next workday prep will show
+   when you wrap the day before returning.
+   ```
+   Skip the prep check.
+
+6. **Tomorrow's Prep Check** (skip if weekend/holiday per Step 5):
+   Fetch the next workday's calendar and surface meetings that need prep work:
+   - Call `mcp__google-calendar__gcal_list_events` with appropriate range (tomorrow or Monday)
    - Categorize meetings into two tiers:
 
    **HIGH-STAKES** (prep is real deep work, not buffer time):
@@ -79,7 +132,7 @@ Generate a daily summary and close out the day. Call this at the end of your wor
 
    - If no meetings need prep, skip this section entirely (don't show "no meetings")
 
-6. **Route Captures Interactively**: If the wrap_day result contains captures (ideas or actions), iterate through each one and help the user route it:
+7. **Route Captures Interactively**: If the wrap_day result contains captures (ideas or actions), iterate through each one and help the user route it:
 
    For each capture (process actions first by urgency, then ideas):
 
