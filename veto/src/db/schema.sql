@@ -78,3 +78,19 @@ CREATE INDEX IF NOT EXISTS idx_daily_summaries_date ON daily_summaries(date);
 CREATE INDEX IF NOT EXISTS idx_refusal_events_date ON refusal_events(date);
 CREATE INDEX IF NOT EXISTS idx_captures_date ON captures(date);
 CREATE INDEX IF NOT EXISTS idx_captures_status ON captures(status);
+
+-- Row Level Security
+-- Enable RLS on all tables. Veto uses service_role key which bypasses RLS,
+-- but enabling it ensures anon key cannot access data via PostgREST.
+ALTER TABLE state_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE segments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE daily_summaries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE refusal_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE captures ENABLE ROW LEVEL SECURITY;
+
+-- Policies for authenticated users (for future multi-user or direct auth access)
+CREATE POLICY "authenticated_full_access_state_logs" ON state_logs FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "authenticated_full_access_segments" ON segments FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "authenticated_full_access_daily_summaries" ON daily_summaries FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "authenticated_full_access_refusal_events" ON refusal_events FOR ALL TO authenticated USING (true) WITH CHECK (true);
+CREATE POLICY "authenticated_full_access_captures" ON captures FOR ALL TO authenticated USING (true) WITH CHECK (true);
