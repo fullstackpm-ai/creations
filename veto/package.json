@@ -11,6 +11,8 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/index.js",
+    "start:remote": "node dist/server-remote.js",
+    "dev:remote": "npx tsx src/server-remote.ts",
     "test:connection": "npx tsx src/db/test-connection.ts",
     "test:assess": "npx tsx src/tools/test-assess.ts",
     "db:migrate": "npx tsx src/db/migrate.ts"
@@ -24,6 +26,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@hono/node-server": "^1.19.9",
     "@modelcontextprotocol/sdk": "^1.25.2",
     "@supabase/supabase-js": "^2.39.0",
     "dotenv": "^16.3.1",
