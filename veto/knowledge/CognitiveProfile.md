@@ -2,8 +2,8 @@
 
 Personal cognitive patterns derived from Veto capture data and behavioral analysis. This document describes *how you think* - the mental models, tendencies, and cognitive architecture that shape your work.
 
-**Last Updated:** 2026-01-24 (Week 4)
-**Data Source:** 46 captures analyzed (Jan 22-24, 2026)
+**Last Updated:** 2026-01-31 (Week 5)
+**Data Source:** 106 captures analyzed (Jan 22-31, 2026)
 
 ---
 
@@ -225,6 +225,98 @@ You have insights but don't fully trust them until externally validated. You see
 
 ---
 
+### Pattern 8: Energy and Focus Can Diverge
+
+Energy and focus usually track together (8/8, 5/5, 6/6). But after heavy meeting days, they can split.
+
+**Evidence (W05, 01/28):**
+- 3:50 PM: Energy 8, Focus 5
+- 3:54 PM: Energy 6, Focus 5
+
+Energy recovered, but focus stayed stuck.
+
+**Implication:** Meetings may deplete *focus* more than *energy*. You can feel physically okay but cognitively fragmented. After meeting-heavy blocks, the intervention isn't rest (energy is fine) - it's focus recovery (single-task, low-stakes work to rebuild attention).
+
+**Cross-reference:** This explains why afternoon post-meeting attempts at deep work fail even when you don't feel tired.
+
+---
+
+### Pattern 9: Judgment Over Others Is Uniquely Draining
+
+Tasks requiring you to evaluate or judge another person's work produce the worst focus scores.
+
+**Evidence (W05):**
+
+| Task | Focus | Completed | What It Required |
+|------|-------|-----------|------------------|
+| Personal finance strategy | 8-10 | Yes | Thinking about yourself |
+| PM Interview Question refinement | 9 | Yes | Improving a process |
+| AWS Connect investigation | 9 | Yes | Technical exploration |
+| **PM Performance Assessment** | **2** | **No** | **Judging another person** |
+
+**Implication:** This connects to Pattern 5 (Visibility Anxiety) and authority hesitation. The draining element isn't the cognitive complexity - it's the interpersonal weight.
+
+**Open question:** Is this about:
+- Lack of clarity on standards?
+- Conflict avoidance?
+- Identity incongruence (judging feels misaligned with self-image)?
+- Something else?
+
+**Status:** Unprocessed. Requires deeper inquiry.
+
+---
+
+### Pattern 10: Deep Work Unlocks Adjacent Insights
+
+The nominal task isn't always the actual work happening. Deep work on one topic can unlock insights on related topics that were queued in the background.
+
+**Evidence (W05, 01/26):**
+
+Task: "Personal finance strategy"
+Actual output: 10 career strategy captures in 4 hours, including:
+- "My strategy: move closer to AI value engine, not accumulate titles"
+- "I should be known as someone who helps people reason about AI leverage"
+- "If you leave without making/reversing AI bets, you're underutilizing"
+
+**Implication:** When you resist a deep work topic, ask: "What *adjacent* question might this unlock?" The resistance might be to the adjacent question, not the stated task. The brain uses one topic as an entry point to process related questions that have been waiting.
+
+---
+
+### Pattern 11: Distractions Are Seeking Something Specific
+
+Distraction impulses aren't random. They correlate with specific cognitive states and seek specific things.
+
+**Evidence (W05 captures):**
+
+| Distraction | Context | What It Seeks |
+|-------------|---------|---------------|
+| LinkedIn | "Triggered while simulating how to grow money" | External validation of professional identity |
+| LinkedIn | "Multiple small distractions" | Status comparison, reassurance |
+| Muthaiah Muralidharan (cricket) | Afternoon, depleted | Comfort, nostalgia, escape |
+
+**Implication:** LinkedIn appears when doing *hard cognitive work* (validation seeking). Cricket appears when *depleted* (comfort seeking). The question isn't "how do I block distractions?" but "what need is the distraction trying to meet, and can I meet that need more directly?"
+
+**Your own question:** *"Why do I search for Muthaiah Muralidharan on YouTube? Go deeper - what am I seeking?"*
+
+**Status:** Partially processed. Requires deeper inquiry.
+
+---
+
+### Pattern 12: State Log Frequency Is a Self-Monitoring Signal
+
+On hard days, you check in with yourself more often. This is data.
+
+**Evidence (W05):**
+
+| Date | State Logs | Day Type |
+|------|------------|----------|
+| 01/28 | **3** | **Heaviest meeting day (5.5 hrs)** |
+| Other days | 1 | Normal |
+
+**Implication:** High state log frequency indicates a depleting day. The system is being used as a self-awareness tool when stressed, not just a logging tool. Frequency itself is a signal worth tracking.
+
+---
+
 ## Temporal Patterns
 
 ### Morning Brain Is Most Active AND Most Intrusive
@@ -289,3 +381,4 @@ Your current role requires *operating* - managing people, responding to Slack, t
 |------|--------|
 | 2026-01-24 | Initial profile created from 46 captures (Jan 22-24) |
 | 2026-01-24 | Added Pattern 1a: The Shadow Side - Framework Before Feeling. Captures the systems thinker blindspot around individual psychology and the role of emotion in grounding logical frameworks. |
+| 2026-01-31 | Added Patterns 8-12 from W05 deeper analysis: Energy/Focus divergence, Judgment over others draining, Deep work unlocks adjacent insights, Distractions seeking something specific, State log frequency as signal. |

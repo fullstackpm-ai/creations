@@ -14,11 +14,11 @@ description: 'Weekly pattern analysis and behavioral insights from Veto data'
 
 **What it does:**
 1. Pulls past 7 days of Veto data (state logs, segments, summaries, captures)
-2. Surfaces previous week's "Questions for Next Week"
-3. Formats raw data for review
-4. Initiates conversational analysis for deeper insights
+2. Surfaces previous week's insights and questions
+3. Guides conversational analysis from surface → deeper insights
+4. Organizes outputs across four vectors (system improvements, personal threads, cognitive profile, documentation)
 
-**The human + Claude conversation produces the insights.** The value comes from contextual reasoning, not automation.
+**Core principle:** Surface insights show metrics. Deeper insights reveal truth. The goal is to find *threads to pull*, not just patterns to observe.
 
 ---
 
@@ -26,11 +26,12 @@ description: 'Weekly pattern analysis and behavioral insights from Veto data'
 
 ## Step 1: Get Week Info and Previous Analysis
 
-1. Run `date +%Y-W%V` to get current week number (e.g., 2026-W04)
-2. Calculate previous week number
-3. Check if previous week's analysis exists:
+1. Run `date +%Y-W%V` to get current week number (e.g., 2026-W05)
+2. Check if previous week's analysis exists:
    - Read file: `veto/weekly-analyses/[PREV-WEEK].md`
-   - Extract "Questions for Next Week" section if it exists
+   - Extract **Key Insights** and **Questions for Next Week** sections
+3. Read current Cognitive Profile: `veto/knowledge/CognitiveProfile.md`
+   - Note current patterns (for cross-referencing later)
 
 ## Step 2: Query Veto Data (run in parallel)
 
@@ -80,7 +81,8 @@ Format and present the data:
 ═══════════════════════════════════════════════════════════════
 
 📋 FOLLOW-UP FROM LAST WEEK
-   [Questions from previous week's analysis, or "First week - no prior data"]
+   [Key insights from previous week]
+   [Questions that were posed for this week]
 
 ───────────────────────────────────────────────────────────────
 
@@ -117,193 +119,246 @@ Format and present the data:
 ═══════════════════════════════════════════════════════════════
 ```
 
-## Step 4: Prompt for Analysis
+## Step 4: Surface-Level Analysis
 
-After presenting the data, prompt the user:
+After presenting raw data, provide **surface-level insights backed by metrics**. Compare to previous week's *insights*, not just numbers.
+
+Focus on:
+1. **Pattern evolution** - How did last week's insights show up this week? Did they persist, evolve, or resolve?
+2. **Metric correlations** - Sleep/focus thresholds, completion patterns, energy trajectories
+3. **Capture themes** - What's generating cognitive load this week vs last?
+
+**Important framing:**
+- DO NOT judge weeks as "failed" based on declining metrics
+- Behavior change takes time: Discovery → Acknowledgment → Internalization → Gradual adoption
+- A week with declining metrics but increased self-awareness is progress, not regression
+- Surface insights show what happened; they don't reveal *why* or *what it means*
+
+Present surface analysis, then prompt:
 
 ```
 ═══════════════════════════════════════════════════════════════
-                    READY FOR ANALYSIS
+                    SURFACE ANALYSIS COMPLETE
 ═══════════════════════════════════════════════════════════════
 
-The raw data is above. Let's analyze patterns together.
+The above shows what the metrics reveal. But surface insights
+don't reveal the deeper truth.
 
-**Surface-level analysis:**
-1. Sleep + focus correlations (threshold effects, weekday vs weekend)
-2. Work type distribution (categorize segments)
-3. Completion rate patterns (what made good days good?)
-4. Capture theme analysis (what's generating cognitive load?)
+Ready to dig deeper? I'll look for:
+• Anomalies that don't fit the pattern (the 2/10 focus score, the divergent data point)
+• Unprocessed captures (questions you asked but didn't answer)
+• Patterns connecting to your Cognitive Profile
+• Threads worth pulling on
 
-**Deep analysis (using your cognitive profile + behavior patterns):**
-I'll cross-reference findings with:
-• Your Cognitive Profile - known patterns like systems-thinking,
-  friction intolerance, visibility anxiety, architect-vs-operator tension
-• Human Behavior Engine - 45+ patterns on why humans behave as they do
-
-**Capture-specific analysis:**
-If you want to understand *why you think the way you think*, I can
-analyze capture content for cognitive patterns, mental models, and
-underlying beliefs.
-
-What would you like to explore?
+What aspects would you like to explore deeper?
 ═══════════════════════════════════════════════════════════════
 ```
 
-## Step 5: Conduct Analysis (Conversational)
+## Step 5: Deeper Insight Mining
 
-Based on user's response, conduct analysis:
+This is where the real value emerges. Based on user direction, dig for insights that reveal truth.
 
-### Surface-Level Analysis Options
+### What to Look For
 
-**Sleep + Focus:**
-- Calculate avg energy/focus at different sleep levels
-- Compare weekday vs weekend performance at same sleep
-- Identify threshold effects (e.g., <6h = degradation)
-- Validate circadian patterns
+**1. Anomalies and Outliers**
+- The segment with unusually low/high focus - what was different about it?
+- Days where energy and focus diverged - what caused the split?
+- The capture that doesn't fit the theme - what's it pointing to?
 
-**Work Type Distribution:**
-- Categorize segments by description keywords:
-  - Strategic Planning: "planning", "strategy", "org chart", "architecture", "review"
-  - Technical/Tool Dev: "MCP", "veto", "setup", "build", "implement", "code"
-  - People Management: "1:1", "performance", "feedback", "team"
-  - Meeting Prep: "prep", "meeting", specific meeting names
-  - Research/Analysis: "research", "analysis", "investigate", "understand"
-- Calculate hours and % per category
+**2. Unprocessed Data**
+- Captures phrased as questions ("Why do I...?", "Need to understand...")
+- Body sensations mentioned but not explored
+- Patterns named but not investigated
 
-**Completion Patterns:**
-- Compare completion rate to hours worked
-- Identify what good days had in common
-- Look for diminishing returns signals
+**3. Task-Specific Patterns**
+- Which *types* of tasks consistently drain vs energize?
+- Are there tasks that produce worse outcomes regardless of state?
+- What distinguishes completed vs incomplete segments beyond focus score?
 
-**Capture Themes:**
-- Group captures by content similarity
-- Identify cognitive load sources
-- Note: high volume = high intrusion day (captures protected focus)
+**4. Cognitive Profile Cross-Reference**
+Read `veto/knowledge/CognitiveProfile.md` and ask:
+- How did known patterns show up this week?
+- Did any pattern manifest in a new way?
+- Is there a new pattern not yet documented?
 
-### Deep Analysis
+**5. Behavioral Pattern Cross-Reference**
+If relevant, cross-reference with `veto/knowledge/BehaviorInsights.md`:
+- What hidden truths does the data reveal through behavioral lenses?
+- Are there patterns the user can't see because they're inside them?
 
-After surface analysis, cross-reference findings with two knowledge bases:
+### How to Present Deeper Insights
 
-**1. Personal Cognitive Profile (`veto/knowledge/CognitiveProfile.md`)**
+Each deeper insight should have:
+1. **What the data shows** - The specific evidence
+2. **What this reveals** - The underlying truth or pattern
+3. **Status** - Is this processed, partially processed, or unprocessed?
+4. **Thread to pull** - If unprocessed, what question should be explored?
 
-Your known cognitive patterns - use these as a lens for interpreting the week's data:
-- Pattern 1: Systems Thinking as Default Mode
-- Pattern 2: Friction Intolerance
-- Pattern 3: Strong Meta-Cognitive Awareness
-- Pattern 4: Leadership Burden as Background Process
-- Pattern 5: Visibility Anxiety
-- Pattern 6: Self-First Accountability
-- Pattern 7: External Validation Seeking
-- Meta-Pattern: Architect Trapped in Operator Role
+Example format:
+```
+### Insight: [Title]
 
-Ask: "How did my cognitive patterns show up this week? Did I fall into known traps?"
+**What the data shows:**
+[Specific evidence from this week's data]
 
-**2. Human Behavior Engine (`veto/knowledge/BehaviorInsights.md`)**
+**What this reveals:**
+[The underlying truth - why this matters]
 
-General behavioral patterns (45+) that reveal *why* humans behave the way they do:
-- Pattern 3: Ego Preservation Loop
-- Pattern 19: The Consistency Trap
-- Pattern 27: Divergent Optimization Functions
-- Pattern 40: Self-Persuasion Dependency
-- Pattern 45: Single-Modality Illusion
-- And others as relevant...
+**Status:** [Processed / Partially processed / Unprocessed]
 
-Ask: "What hidden truths does the data reveal when viewed through these lenses?"
+**Thread to pull:** [Question for deeper exploration, if applicable]
+```
 
-**3. Check for New Cognitive Patterns**
+## Step 6: Organize Outputs Across Four Vectors
 
-If the week's data reveals a new pattern not in CognitiveProfile.md, flag it for addition.
+After deeper analysis, organize findings into four categories:
 
-## Step 6: Generate Recommendations
+### Vector 1: System Improvements (GitHub Issues)
+Insights that point to Veto design improvements:
+- Missing data the system should capture
+- Signals the system should surface
+- Guardrails that should be added
+- UX friction that should be removed
 
-Based on analysis, generate:
+**Action:** Create GitHub issues for each improvement in `fullstackpm-ai/creations`
 
-1. **One primary recommendation** - the single highest-leverage change
-2. **2-3 supporting recommendations** - additional improvements
-3. **Questions for next week** - what to track/verify
+### Vector 2: Personal Threads to Process (Trello Card)
+Insights that require personal inquiry - sitting with questions, not solving them quickly:
+- Unprocessed emotions or body sensations
+- Questions about identity, values, or meaning
+- Patterns that need reflection, not action
 
-## Step 6b: Deeper Reflection Check
+**Action:** Create a single Trello card "Deep Threads to Process (W[XX])" on Thinking board with checklist items for each thread
 
-Weekly analysis surfaces operational patterns. But some insights point to deeper questions about role, identity, and life architecture.
+**Approach note:** These require Pattern 1a work (feel before framework). Pick one thread per week. Sit with it. Don't rush to systematize.
+
+### Vector 3: Cognitive Profile Updates
+New patterns discovered that should be documented:
+- Patterns that showed up consistently in this week's data
+- New manifestations of existing patterns
+- Patterns that connect multiple observations
+
+**Action:** Update `veto/knowledge/CognitiveProfile.md` with new patterns
+
+### Vector 4: Weekly Analysis Documentation
+The analysis itself, prioritizing deeper insights over surface metrics:
+- Deeper insights should be the primary content
+- Surface metrics preserved in Raw Metrics section for reference
+- Artifacts section linking to all created items
+- Questions for next week
+
+**Action:** Save to `veto/weekly-analyses/[YYYY-WNN].md`
+
+## Step 7: Save and Summarize
+
+After organizing across all vectors:
+
+1. **Save the weekly analysis file** with this structure:
+   ```
+   # Weekly Analysis: [YYYY-WNN]
+   **Period:** [Start Date] - [End Date]
+
+   ## Deeper Insights
+   [The insights that reveal truth - 5-10 insights]
+
+   ## Artifacts Created
+   [Table of GitHub issues, Trello cards, Cognitive Profile updates]
+
+   ## Week [N-1] → Week [N]: Pattern Evolution
+   [How previous week's insights evolved or persisted]
+
+   ## Captures by Theme
+   [Grouped captures for reference]
+
+   ## Questions for Next Week
+   [Specific questions to investigate]
+
+   ## Raw Metrics
+   [State logs, segments, summaries tables for reference]
+   ```
+
+2. **Summarize what was created:**
+   ```
+   ═══════════════════════════════════════════════════════════════
+                        WEEKLY ANALYSIS COMPLETE
+   ═══════════════════════════════════════════════════════════════
+
+   Created:
+   • [N] GitHub issues for Veto improvements
+   • Trello card with [N] threads to process
+   • [N] new patterns added to Cognitive Profile
+   • Weekly analysis saved to veto/weekly-analyses/[WEEK].md
+
+   Key insight this week:
+   [Single most important deeper insight]
+
+   Thread to prioritize:
+   [The one personal thread most worth sitting with]
+   ═══════════════════════════════════════════════════════════════
+   ```
+
+## Step 8: Deeper Reflection Check (Optional)
+
+Weekly analysis surfaces operational patterns. Some insights point to deeper questions about role, identity, and life architecture.
 
 ### Check for Existential Themes
 
-Review the week's captures and insights for themes that go beyond "how do I work better":
+Review the week's captures and insights for themes beyond "how do I work better":
 
-- **Role fit questions** - Am I in the right seat? Should I be doing this job?
+- **Role fit questions** - Am I in the right seat?
 - **Identity tensions** - Conflict between who I am and what the role requires
 - **Energy patterns** - Consistent drain from certain work categories
 - **Resentment signals** - "I shouldn't have to do this" feelings
-- **Fantasy patterns** - Recurring daydreams about different work/life
 
 ### If Existential Themes Emerge
 
 1. **Check `veto/knowledge/RoleReflection.md`** for existing reflection work
-2. **Surface the theme** to the user: "This week's data suggests a deeper question about [X]. Want to explore this?"
-3. **If yes**, either:
-   - Continue in this session (if time/energy permits)
-   - Create a Trello card for dedicated reflection work
-   - Schedule for next week's session
+2. **Surface the theme** to the user
+3. **If exploring**, either:
+   - Continue in this session
+   - Create a Trello card for dedicated reflection
+   - Schedule for next week
 
 ### Quarterly Deep Reflection (Every 12-13 weeks)
 
-At the start of each quarter, prompt for deeper reflection:
-
+At quarter boundaries, prompt:
 ```
-═══════════════════════════════════════════════════════════════
-                 QUARTERLY REFLECTION CHECK
-═══════════════════════════════════════════════════════════════
-
 It's been ~12 weeks since last deep reflection.
 
-Beyond operational patterns, let's check:
+Beyond operational patterns:
 1. Role fit - Is COO still the right seat?
-2. Energy trajectory - Am I more or less energized than 12 weeks ago?
-3. RoleReflection.md status - Any open questions to revisit?
-4. Life architecture - Is work structured the way I want?
+2. Energy trajectory - More or less energized than 12 weeks ago?
+3. Life architecture - Is work structured the way you want?
 
-Want to do a deeper reflection session, or stay operational today?
-═══════════════════════════════════════════════════════════════
+Want to do deeper reflection, or stay operational today?
 ```
 
-### Role Reflection Integration
+---
 
-If `veto/knowledge/RoleReflection.md` has open exercises or unanswered questions:
+## Core Principles
 
-1. Surface them: "Your Role Reflection has open questions from [date]. Want to revisit?"
-2. If the reflection is complete, ask: "Has anything changed since you completed your Role Reflection?"
-3. Track whether the decision/insight is being lived out in weekly data
+1. **Surface insights show metrics. Deeper insights reveal truth.** Always dig past the numbers.
 
-## Step 7: Save Analysis
+2. **Behavior change takes time.** The path is: Discovery → Acknowledgment → Internalization → Gradual adoption. Don't judge weeks as "failed" based on metrics.
 
-After the conversation is complete, ask the user if they want to save the analysis.
+3. **Compare insights, not just numbers.** When looking at previous week, ask how insights evolved, not just whether numbers improved.
 
-If yes:
-1. Get current week number: `date +%Y-W%V`
-2. Create file at `veto/weekly-analyses/[YYYY-WNN].md`
-3. Include all sections:
-   - Sleep + Focus Patterns
-   - Work Type Distribution
-   - Daily Performance Summary
-   - Underlying Truths
-   - Capture Analysis
-   - Deep Analysis (if done)
-   - Behavioral Recommendations
-   - Questions for Next Week
-   - Raw Metrics Summary
+4. **Look for unprocessed data.** Questions in captures, body sensations, patterns named but not explored - these are threads to pull.
 
-Confirm: "Analysis saved to `veto/weekly-analyses/[YYYY-WNN].md`"
+5. **Organize across four vectors.** System improvements (GitHub), personal threads (Trello), cognitive profile updates, and documentation each serve different purposes.
+
+6. **The value comes from conversation.** The skill provides structure; the insight emerges from collaborative exploration with the user.
+
+---
 
 ## Notes
 
-- The value comes from conversation, not automation
-- Cross-reference with three knowledge bases:
-  - `veto/knowledge/CognitiveProfile.md` - Your personal cognitive patterns
+- Cross-reference with knowledge bases:
+  - `veto/knowledge/CognitiveProfile.md` - Personal cognitive patterns
   - `veto/knowledge/BehaviorInsights.md` - General human behavior patterns
-  - `veto/knowledge/RoleReflection.md` - Deeper questions about role fit and career architecture
+  - `veto/knowledge/RoleReflection.md` - Role fit and career architecture
 - Previous week's questions should drive follow-up analysis
 - Captures are outputs (pressure release), not inputs - high volume = contained intrusions
-- Weekly analyses are stored as markdown in `veto/weekly-analyses/`
+- Weekly analyses stored in `veto/weekly-analyses/`
 - If new cognitive patterns emerge, update CognitiveProfile.md
-- If existential themes emerge, check RoleReflection.md or create dedicated reflection time
-- Quarterly (every 12-13 weeks): prompt for deeper life/role reflection beyond operational patterns
+- Quarterly: prompt for deeper life/role reflection beyond operational patterns
