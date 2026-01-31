@@ -83,27 +83,56 @@ Generate a daily summary and close out the day. Call this at the end of your wor
 
    For each capture (process actions first by urgency, then ideas):
 
-   **Step A**: Display the capture content as regular text output BEFORE the option picker:
+   **Step A**: Display the capture with YOUR RECOMMENDATION as regular text BEFORE the option picker:
    ```
-   ───────────────────────────────────────
+   ═══════════════════════════════════════════════════════════════
    CAPTURE [1/N] — [💡 IDEA / ✅ ACTION] [⚡NOW / 📅TODAY / 📥LATER]
-   ───────────────────────────────────────
+   ═══════════════════════════════════════════════════════════════
 
    "[Full capture content here]"
 
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 🤖 RECOMMENDATION: [Your suggested action]                  │
+   │                                                             │
+   │ [Brief reasoning - 1-2 sentences max]                       │
+   └─────────────────────────────────────────────────────────────┘
    ```
 
-   **Step B**: Then use `AskUserQuestion` with a short question:
-   - **question**: `"What would you like to do with this capture?"`
-   - **header**: `"Route"`
-   - **options**:
-      - **Complete** - "Mark as done (handled or no longer relevant)"
-      - **Trello** - "Create a card on my Trello board"
-      - **GitHub** - "Create a GitHub issue"
-      - **Dismiss** - "Discard this capture"
-      - (User can also type custom response via "Other")
+   **How to generate recommendations:**
+   Analyze the capture content and recommend ONE of these actions:
 
-   **IMPORTANT**: The capture content MUST be displayed as text output BEFORE calling AskUserQuestion. This ensures the user can see the full capture text, as the option picker UI can obscure long question text.
+   - **Dismiss** if:
+     - Already completed or no longer relevant
+     - Vague with no clear next action ("think about X sometime")
+     - Superseded by other work done today
+
+   - **Complete** if:
+     - It was a quick reminder that's been handled
+     - A one-time note that doesn't need tracking
+
+   - **Trello** if:
+     - It's a concrete task with clear scope
+     - Relates to ongoing project work
+     - Suggest specific list: "Inbox", "Blocked", etc.
+
+   - **GitHub** if:
+     - It's a bug or technical enhancement
+     - Relates to a specific codebase
+     - Would benefit from issue tracking/discussion
+
+   Mark your top recommendation with "(Recommended)" in the options.
+
+   **Step B**: Then use `AskUserQuestion` with options ordered by your recommendation:
+   - **question**: `"Route this capture?"`
+   - **header**: `"Route"`
+   - **options** (put recommended option FIRST with "(Recommended)" suffix):
+      - **[Recommended action] (Recommended)** - "[reason]"
+      - **Complete** - "Mark as done"
+      - **Trello** - "Create a Trello card"
+      - **GitHub** - "Create a GitHub issue"
+      - **Dismiss** - "Discard"
+
+   **IMPORTANT**: The capture content and recommendation MUST be displayed as text output BEFORE calling AskUserQuestion. The option picker UI truncates long text, so the capture must be fully visible above it.
 
    Based on user's choice:
       - **Complete now**: Call `mcp__veto__veto_route_capture` with `action: "complete"`
