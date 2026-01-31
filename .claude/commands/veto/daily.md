@@ -52,6 +52,7 @@ After Step 1 completes:
    - Only show Chores board
    - Use relaxed tone: "It's the weekend! Here's what's optional:"
    - Don't recommend deep work segments
+   - **Always check for Weekly Review** (see below)
 
    **Holiday detection:**
    - Check today's calendar (from Step 1) for all-day events with: `holiday`, `PTO`, `off`, `vacation`
@@ -75,6 +76,26 @@ After Step 1 completes:
    - `mcp__trello__trello_get_overdue_cards` with `include_completed: false`
 
    **Weekend mode**: Only fetch Chores board. Skip Thinking and Delegations.
+
+   **Weekly Review check (weekend mode only):**
+   Search for "Weekly Review" on the Chores board:
+   - Call `mcp__trello__trello_search_cards` with `query: "Weekly Review"`, `board_id: "696ee291d80f2f2d8055094e"`
+
+   If found and not completed recently:
+   ```
+   ┌─────────────────────────────────────────────────────────────┐
+   │ 📋 WEEKLY REVIEW                                            │
+   │                                                             │
+   │ Good time for your weekly review! This helps you:           │
+   │ • Process inbox to zero                                     │
+   │ • Review upcoming week's calendar                           │
+   │ • Update project lists                                      │
+   │ • Identify next actions                                     │
+   └─────────────────────────────────────────────────────────────┘
+   ```
+
+   If no Weekly Review card exists, suggest creating one:
+   "No Weekly Review card found. Want me to create a recurring weekly review task?"
 
 ## Step 3: Get Task Estimates
 
