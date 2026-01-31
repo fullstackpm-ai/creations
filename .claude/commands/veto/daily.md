@@ -34,25 +34,47 @@ Call these tools simultaneously:
 4. `mcp__google-calendar__gcal_find_free_time` with today's date - get available time blocks
 5. `mcp__veto__veto_get_today_state` - check if user already logged state today
 
-## Step 2: Get Current Time and Tasks
+## Step 2: Get Current Time, Day Type, and Tasks
 
 After Step 1 completes:
 
-1. Run `date` to get current time
-2. Fetch tasks from ALL THREE boards in parallel:
+1. Run `date` to get current time AND day of week
+2. **Detect day type:**
 
-   **Thinking board** (`68031b17e0ef40f25b75d2ab`):
+   | Day | Mode | Behavior |
+   |-----|------|----------|
+   | Monday-Friday | Work mode | Full planning with all boards |
+   | Saturday-Sunday | Weekend mode | Lighter planning, focus on chores/personal |
+
+   **Weekend mode adjustments:**
+   - Skip Thinking board tasks (work tasks)
+   - Skip Delegations board (work follow-ups)
+   - Only show Chores board
+   - Use relaxed tone: "It's the weekend! Here's what's optional:"
+   - Don't recommend deep work segments
+
+   **Holiday detection:**
+   - Check today's calendar (from Step 1) for all-day events with: `holiday`, `PTO`, `off`, `vacation`
+   - If found, treat as weekend mode
+
+3. Fetch tasks based on day type:
+
+   **Work mode (Monday-Friday, non-holiday)** - fetch from ALL THREE boards:
+
+   **Thinking board** (`68031b17e0ef40f25b75d2ab`) - *skip on weekends*:
    - `mcp__trello__trello_get_cards_due_soon` with `days: 3`, `include_completed: false`
    - `mcp__trello__trello_get_overdue_cards` with `include_completed: false`
 
-   **Delegated board** (`696ee27d5be8fa4ad4d18486`):
+   **Delegated board** (`696ee27d5be8fa4ad4d18486`) - *skip on weekends*:
    - `mcp__trello__trello_get_cards_due_soon` with `days: 7`, `include_completed: false`
    - `mcp__trello__trello_get_overdue_cards` with `include_completed: false`
    - `mcp__trello__trello_get_lists` - **fetch lists to get delegate names** (list name = person)
 
-   **Chores board** (`696ee291d80f2f2d8055094e`):
+   **Chores board** (`696ee291d80f2f2d8055094e`) - *always fetch*:
    - `mcp__trello__trello_get_cards_due_soon` with `days: 3`, `include_completed: false`
    - `mcp__trello__trello_get_overdue_cards` with `include_completed: false`
+
+   **Weekend mode**: Only fetch Chores board. Skip Thinking and Delegations.
 
 ## Step 3: Get Task Estimates
 
