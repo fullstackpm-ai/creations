@@ -48,6 +48,7 @@ After Step 1 completes:
    **Delegated board** (`696ee27d5be8fa4ad4d18486`):
    - `mcp__trello__trello_get_cards_due_soon` with `days: 7`, `include_completed: false`
    - `mcp__trello__trello_get_overdue_cards` with `include_completed: false`
+   - `mcp__trello__trello_get_lists` - **fetch lists to get delegate names** (list name = person)
 
    **Chores board** (`696ee291d80f2f2d8055094e`):
    - `mcp__trello__trello_get_cards_due_soon` with `days: 3`, `include_completed: false`
@@ -192,6 +193,12 @@ Present a formatted summary:
 ───────────────────────────────────────────────────────────────
 
 📤 DELEGATIONS (Follow-ups)
+
+   Format each card as: • [Card name] (@[ListName]) | Due: [date]
+   The list name is the delegate (person responsible).
+   Look up list name using card's idList field against the lists fetched in Step 2.
+
+   Example: • PM Separation of Data (@Tim) | Due: Sat
 
    [Show overdue delegations with ⚠️ if any]
    [Show upcoming due dates for delegated items]
