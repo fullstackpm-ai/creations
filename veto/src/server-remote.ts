@@ -27,11 +27,14 @@ import { vetoGetTodayState } from "./tools/get-today-state.js";
 
 const PORT = parseInt(process.env.PORT || "3000", 10);
 const API_TOKEN = process.env.VETO_API_TOKEN;
+const AUTH_MODE = process.env.VETO_AUTH_MODE || "token"; // "token" or "none"
 
-if (!API_TOKEN) {
-  console.error("ERROR: VETO_API_TOKEN environment variable is required");
+if (AUTH_MODE === "token" && !API_TOKEN) {
+  console.error("ERROR: VETO_API_TOKEN environment variable is required when AUTH_MODE=token");
   process.exit(1);
 }
+
+console.log(`Auth mode: ${AUTH_MODE}`);
 
 // Tool schemas
 const CaptureInputSchema = z.object({
@@ -173,8 +176,14 @@ function formatGetTodayState(result: Awaited<ReturnType<typeof vetoGetTodayState
   return `Today's state: Energy ${state_log.energy}/10, Focus ${state_log.focus}/10${state_log.mood ? `, Mood: ${state_log.mood}` : ""}`;
 }
 
-// Simple bearer token auth middleware
+// Auth middleware - supports token or authless mode
 function authenticate(req: IncomingMessage, res: ServerResponse): boolean {
+  // Authless mode - allow all requests
+  if (AUTH_MODE === "none") {
+    return true;
+  }
+
+  // Token mode - require bearer token
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
